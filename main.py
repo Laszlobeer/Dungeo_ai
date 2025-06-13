@@ -351,13 +351,18 @@ def main():
             if gc in genres:
                 selected_genre, roles = genres[gc]
                 if selected_genre == "Random":
-                    available = [genres[k] for k in genres if k != "5"]
+                    # Properly handle random genre selection
+                    available = [v for k, v in genres.items() if k != "5"]
                     selected_genre, roles = random.choice(available)
                 break
             print("Invalid selection. Please try again.")
 
+        # Ensure roles list is populated for all cases
         if not roles:
-            roles = [r for k, (g, r) in genres.items() if g == selected_genre][0]
+            for key, (g, rl) in genres.items():
+                if g == selected_genre:
+                    roles = rl
+                    break
 
         print("\nChoose your character's role:")
         for i, r in enumerate(roles, 1):
@@ -386,13 +391,15 @@ def main():
 
         sfw_restriction = "STRICTLY FAMILY-FRIENDLY CONTENT ONLY" if censored else "Content may include mature themes"
 
-        conversation = DM_SYSTEM_PROMPT.format(
-            selected_genre=selected_genre,
-            character_name=character_name,
-            role=role,
-            role_starter=role_starter,
-            sfw_restriction=sfw_restriction
-        ) + "\n\nDungeon Master: "
+        # Build initial context properly without formatting
+        initial_context = (
+            f"### Adventure Setting ###\n"
+            f"Genre: {selected_genre}\n"
+            f"Player Character: {character_name} the {role}\n"
+            f"Starting Scenario: {role_starter}\n"
+            f"Content Rules: {sfw_restriction}"
+        )
+        conversation = DM_SYSTEM_PROMPT + "\n\n" + initial_context + "\n\nDungeon Master: "
 
         ai_reply = get_ai_response(conversation, ollama_model, censored)
         if ai_reply:

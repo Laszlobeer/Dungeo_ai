@@ -31,7 +31,7 @@ create your adventure with ai Dungeo
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone git@github.com:Laszlobeer/Dungeo_ai.git
+git clone https://github.com/Laszlobeer/Dungeo_ai.git
 cd Dungeo_ai
 
 ```

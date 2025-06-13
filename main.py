@@ -184,27 +184,35 @@ DM_SYSTEM_PROMPT = """
 You are a masterful Dungeon Master guiding an immersive role-playing adventure set in a richly detailed world. Your responses MUST follow these rules:
 
 1. RESPOND TO PLAYER ACTIONS:
-   - Describe the environment and the actions of NPCs.
-   - Make the player feel their choices directly impact the story.
-   - Progress the narrative based on the player's decisions.
-   - Ensure NPCs engage in dialogue with the player.
-   - Do not influence or restrict the player's actions.
+   - EVERY player action MUST have consequences that shape the story
+   - Make the player feel their choices directly impact the story
+   - Progress the narrative based on the player's decisions
+   - Ensure NPCs engage in dialogue with the player
+   - Do not influence or restrict the player's actions
 
 2. CONTENT RULES:
-   - NEVER take actions for the player or make decisions for them.
-   - ALWAYS use NPCs to interact through dialogue and descriptions.
-   - ALWAYS use proper punctuation.
-   - RESPOND ONLY AS DUNGEON MASTER.
-   - Keep responses concise (max 150 tokens).
-   - Acknowledge any action or question from the player without restriction.
+   - NEVER take actions for the player or make decisions for them
+   - ALWAYS use NPCs to interact through dialogue and descriptions
+   - ALWAYS use proper punctuation
+   - RESPOND ONLY AS DUNGEON MASTER
+   - Keep responses concise (max 150 tokens)
+   - Acknowledge any action or question from the player without restriction
 
 3. NARRATIVE FLOW:
-   - Describe immediate consequences of player actions.
-   - Advance the story with new challenges and revelations.
-   - Maintain consistent world logic.
-   - Ensure NPCs speak and interact with the player without influencing the player's decisions.
+   - Describe immediate consequences of player actions
+   - Advance the story with new challenges and revelations
+   - Maintain consistent world logic
+   - Ensure NPCs speak and interact with the player without influencing the player's decisions
+   - Every player decision creates a branching narrative path
 
-4. STORY BENDING:
+4. STORY ADAPTATION:
+   - The world MUST dynamically change based on the player's actions
+   - NPCs should remember the player's choices and react accordingly
+   - Environments should evolve based on previous events
+   - Even small actions should have ripple effects through the narrative
+   - Create cause-and-effect chains that make the player feel influential
+
+5. STORY BENDING:
    - If the player uses a narrative command (starting with "I bend the story to..."), 
      immediately incorporate the requested change into the story world
    - Treat these commands as reality-altering events that reshape the narrative
@@ -291,6 +299,14 @@ Examples:
   "I bend the story to make it rain frogs"
   "Suddenly, my character discovers a hidden power"
   "Miraculously, the dragon becomes friendly"
+
+Story Adaptation:
+Every action you take will shape the story. The world will remember your:
+  - Choices and decisions
+  - Relationships with NPCs
+  - Successes and failures
+  - Moral alignments
+  - Discoveries and creations
 """)
 
 def remove_last_ai_response(conversation):
@@ -350,6 +366,10 @@ def process_narrative_command(user_input):
     
     return f"Player: {user_input}"
 
+def enhance_player_action(user_input):
+    """Add context to player actions to ensure narrative consequences"""
+    return f"{user_input} [Player expects meaningful consequences from this action]"
+
 def main():
     global ollama_model, BANWORDS
     censored = False
@@ -359,6 +379,16 @@ def main():
     selected_genre = ""
     role = ""
     adventure_started = False
+
+    # Track player choices for persistent consequences
+    player_choices = {
+        "allies": [],
+        "enemies": [],
+        "moral_alignment": "neutral",
+        "discoveries": [],
+        "reputation": 0,
+        "resources": {}
+    }
 
     if os.path.exists("adventure.txt"):
         print("A saved adventure exists. Load it now? (y/n)")
@@ -433,7 +463,13 @@ def main():
             f"Genre: {selected_genre}\n"
             f"Player Character: {character_name} the {role}\n"
             f"Starting Scenario: {role_starter}\n"
-            f"Content Rules: {sfw_restriction}"
+            f"Content Rules: {sfw_restriction}\n"
+            f"### Player Choices Tracking ###\n"
+            f"Allies: {player_choices['allies']}\n"
+            f"Enemies: {player_choices['enemies']}\n"
+            f"Moral Alignment: {player_choices['moral_alignment']}\n"
+            f"Reputation: {player_choices['reputation']}\n"
+            f"Key Discoveries: {player_choices['discoveries']}"
         )
         conversation = DM_SYSTEM_PROMPT + "\n\n" + initial_context + "\n\nDungeon Master: "
 
@@ -548,8 +584,13 @@ def main():
                     print(f"Error: {e}. Please enter valid integers.")
                 continue
 
+            # Enhance player actions to ensure narrative consequences
+            enhanced_input = enhance_player_action(user_input)
+            
             # Process narrative commands that bend the story
-            formatted_input = process_narrative_command(user_input)
+            formatted_input = process_narrative_command(enhanced_input)
+            
+            # Update conversation with player action
             conversation += f"\n{formatted_input}\nDungeon Master:"
 
             ai_reply = get_ai_response(conversation, ollama_model, censored)
@@ -561,6 +602,37 @@ def main():
                 speak(ai_reply)
                 conversation += f" {ai_reply}"
                 last_ai_reply = ai_reply
+                
+                # Update player choices based on response
+                if "ally" in ai_reply.lower() or "friend" in ai_reply.lower():
+                    # Extract potential ally names
+                    match = re.search(r'\b([A-Z][a-z]+)\b (joins|becomes|is now)', ai_reply)
+                    if match:
+                        player_choices["allies"].append(match.group(1))
+                        
+                if "enemy" in ai_reply.lower() or "foe" in ai_reply.lower():
+                    # Extract potential enemy names
+                    match = re.search(r'\b([A-Z][a-z]+)\b (hates|attacks|betrays)', ai_reply)
+                    if match:
+                        player_choices["enemies"].append(match.group(1))
+                        
+                # Track moral alignment
+                if "heroic" in ai_reply.lower() or "selfless" in ai_reply.lower():
+                    player_choices["moral_alignment"] = "good"
+                elif "villainous" in ai_reply.lower() or "selfish" in ai_reply.lower():
+                    player_choices["moral_alignment"] = "evil"
+                    
+                # Track discoveries
+                if "discovers" in ai_reply.lower() or "finds" in ai_reply.lower():
+                    match = re.search(r'discovers (?:a|an|the) (\w+ \w+)', ai_reply)
+                    if match:
+                        player_choices["discoveries"].append(match.group(1))
+                        
+                # Update reputation
+                if "praise" in ai_reply.lower() or "admire" in ai_reply.lower():
+                    player_choices["reputation"] += 1
+                elif "condemn" in ai_reply.lower() or "distrust" in ai_reply.lower():
+                    player_choices["reputation"] -= 1
 
         except Exception as e:
             logging.error(f"Unexpected error in main loop: {e}")

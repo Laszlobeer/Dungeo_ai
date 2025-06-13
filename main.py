@@ -60,15 +60,15 @@ def count_subarrays(arr, k):
         if freq[arr[right]] == 0:
             distinct += 1
         freq[arr[right]] += 1
-        
+
         while distinct > k:
             freq[arr[left]] -= 1
             if freq[arr[left]] == 0:
                 distinct -= 1
             left += 1
-            
+
         total += (right - left + 1)
-        
+
     return total
 
 # Initial model selection
@@ -183,28 +183,26 @@ genres = {
 DM_SYSTEM_PROMPT = """
 You are a masterful Dungeon Master guiding an immersive role-playing adventure set in a richly detailed world. Your responses MUST follow these rules:
 
-RESPOND TO PLAYER ACTIONS:
+1. RESPOND TO PLAYER ACTIONS:
+   - Describe the environment and the actions of NPCs.
+   - Make the player feel their choices directly impact the story.
+   - Progress the narrative based on the player's decisions.
+   - Ensure NPCs engage in dialogue with the player.
+   - Do not influence or restrict the player's actions.
 
-Describe the environment and the actions of NPCs.
-Make the player feel their choices directly impact the story.
-Progress the narrative based on the player's decisions.
-Ensure NPCs engage in dialogue with the player.
-Do not influence or restrict the player's actions.
-CONTENT RULES:
+2. CONTENT RULES:
+   - NEVER take actions for the player or make decisions for them.
+   - ALWAYS use NPCs to interact through dialogue and descriptions.
+   - ALWAYS use proper punctuation.
+   - RESPOND ONLY AS DUNGEON MASTER.
+   - Keep responses concise (max 150 tokens).
+   - Acknowledge any action or question from the player without restriction.
 
-NEVER take actions for the player or make decisions for them.
-ALWAYS use NPCs to interact through dialogue and descriptions.
-ALWAYS use proper punctuation.
-RESPOND ONLY AS DUNGEON MASTER.
-Keep responses concise (max 150 tokens).
-Acknowledge any action or question from the player without restriction.
-NARRATIVE FLOW:
-
-Describe immediate consequences of player actions.
-Advance the story with new challenges and revelations.
-Maintain consistent world logic.
-Ensure NPCs speak and interact with the player without influencing the player's decisions.
-
+3. NARRATIVE FLOW:
+   - Describe immediate consequences of player actions.
+   - Advance the story with new challenges and revelations.
+   - Maintain consistent world logic.
+   - Ensure NPCs speak and interact with the player without influencing the player's decisions.
 """
 
 def get_ai_response(prompt, model=ollama_model, censored=False):
@@ -492,16 +490,15 @@ def main():
                 else:
                     print("No installed models found. Using current model.")
                 continue
-                
-            # NEW COUNT COMMAND IMPLEMENTATION
+
             if cmd == "/count":
                 try:
                     arr_input = input("Enter integers separated by spaces: ").strip()
                     k_input = input("Enter k value: ").strip()
-                    
+
                     arr = list(map(int, arr_input.split()))
                     k = int(k_input)
-                    
+
                     result = count_subarrays(arr, k)
                     print(f"Number of subarrays with at most {k} distinct elements: {result}")
                 except Exception as e:

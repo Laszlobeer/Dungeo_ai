@@ -203,6 +203,13 @@ You are a masterful Dungeon Master guiding an immersive role-playing adventure s
    - Advance the story with new challenges and revelations.
    - Maintain consistent world logic.
    - Ensure NPCs speak and interact with the player without influencing the player's decisions.
+
+4. STORY BENDING:
+   - If the player uses a narrative command (starting with "I bend the story to..."), 
+     immediately incorporate the requested change into the story world
+   - Treat these commands as reality-altering events that reshape the narrative
+   - Describe the immediate effects and consequences of these changes in a believable way
+   - Maintain internal consistency with the new reality
 """
 
 def get_ai_response(prompt, model=ollama_model, censored=False):
@@ -272,6 +279,18 @@ Available commands:
 /change           - Switch to a different Ollama model
 /count            - Calculate subarrays with at most k distinct elements
 /exit             - Exit the game
+
+Narrative Control:
+To bend the story to your will, start your input with:
+  "I bend the story to..." 
+  "I reshape reality so that..."
+  "Suddenly, ..."
+  "Miraculously, ..."
+
+Examples:
+  "I bend the story to make it rain frogs"
+  "Suddenly, my character discovers a hidden power"
+  "Miraculously, the dragon becomes friendly"
 """)
 
 def remove_last_ai_response(conversation):
@@ -313,6 +332,23 @@ def sanitize_response(response, censored=False):
         response += '.'
 
     return response
+
+def process_narrative_command(user_input):
+    """Process narrative commands that bend the story"""
+    triggers = [
+        "i bend the story to",
+        "i reshape reality so that",
+        "suddenly,",
+        "miraculously,",
+        "unexpectedly,",
+        "against all odds,"
+    ]
+    
+    for trigger in triggers:
+        if user_input.lower().startswith(trigger):
+            return f"Player (narrative command): {user_input}"
+    
+    return f"Player: {user_input}"
 
 def main():
     global ollama_model, BANWORDS
@@ -512,7 +548,9 @@ def main():
                     print(f"Error: {e}. Please enter valid integers.")
                 continue
 
-            conversation += f"\nPlayer: {user_input}\nDungeon Master:"
+            # Process narrative commands that bend the story
+            formatted_input = process_narrative_command(user_input)
+            conversation += f"\n{formatted_input}\nDungeon Master:"
 
             ai_reply = get_ai_response(conversation, ollama_model, censored)
 

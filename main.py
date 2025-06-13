@@ -7,11 +7,10 @@ import subprocess
 import re
 import logging
 import datetime
-import textwrap
 
 # Configure logging
 log_filename = f"rpg_adventure_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
-logging.basicConfig(filename=log_filename, level=logging.ERROR, 
+logging.basicConfig(filename=log_filename, level=logging.ERROR,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 ALLTALK_API_URL = "http://localhost:7851/api/tts-generate"
@@ -21,7 +20,7 @@ def load_banwords():
     banwords = []
     try:
         if os.path.exists("banwords.txt"):
-            with open("banwords.txt", "r") as f:
+            with open("banwords.txt", "r", encoding="utf-8") as f:
                 banwords = [line.strip().lower() for line in f if line.strip()]
             logging.info(f"Loaded {len(banwords)} banned words")
     except Exception as e:
@@ -50,6 +49,8 @@ def get_installed_models():
 
 # Initial model selection
 installed_models = get_installed_models()
+ollama_model = "llama3:instruct"  # Set default first
+
 if installed_models:
     print("Available Ollama models:")
     for idx, m in enumerate(installed_models, 1):
@@ -57,7 +58,6 @@ if installed_models:
     while True:
         choice = input("Select a model by number (or press Enter for default llama3:instruct): ").strip()
         if not choice:
-            ollama_model = "llama3:instruct"
             break
         try:
             idx = int(choice) - 1
@@ -69,7 +69,8 @@ if installed_models:
             print("Invalid input. Please enter a number.")
 else:
     model_input = input("Enter Ollama model name (e.g., llama3:instruct): ").strip()
-    ollama_model = model_input or "llama3:instruct"
+    if model_input:
+        ollama_model = model_input
 
 print(f"Using Ollama model: {ollama_model}\n")
 
@@ -116,23 +117,19 @@ ROLE_STARTERS = {
 
 def get_role_starter(genre, role):
     """Get a role-specific starting scenario"""
-    # Try to get specific starter for this role
     if genre in ROLE_STARTERS and role in ROLE_STARTERS[genre]:
         return ROLE_STARTERS[genre][role]
-    
-    # Generic starters by genre
+
     generic_starters = {
         "Fantasy": "You're going about your daily duties when",
         "Sci-Fi": "You're performing routine tasks aboard your vessel when",
         "Cyberpunk": "You're navigating the neon-lit streets when",
         "Post-Apocalyptic": "You're surviving in the wasteland when"
     }
-    
-    # Fallback to genre-specific starter
+
     if genre in generic_starters:
         return generic_starters[genre]
-    
-    # Ultimate fallback
+
     return "You find yourself in an unexpected situation when"
 
 genres = {
@@ -159,33 +156,36 @@ genres = {
     "5": ("Random", [])
 }
 
-# Revised system prompt without 3-line rule
 DM_SYSTEM_PROMPT = """
 You are a masterful Dungeon Master guiding an immersive role-playing adventure set in a richly detailed {selected_genre} world. Your responses MUST follow these rules:
 
 1. RESPOND TO PLAYER ACTIONS:
-   - Always incorporate and react to the player's most recent action
-   - Make the player feel their choices directly impact the story
-   - Progress the narrative based on the player's decisions
+   - Always describe the environment and the actions of NPCs.
+   - Make the player feel their choices directly impact the story.
+   - Progress the narrative based on the player's decisions.
 
 2. CONTENT RULES:
-   - NEVER ask direct questions (e.g., "What do you do?")
-   - ALWAYS use NPCs to interact through dialogue/actions
-   - ALWAYS use proper punctuation
-   - RESPOND ONLY AS DUNGEON MASTER
-   - Keep responses concise (max 150 tokens)
+   - NEVER take actions for the player or make decisions for them.
+   - ALWAYS use NPCs to interact through dialogue and descriptions.
+   - ALWAYS use proper punctuation.
+   - RESPOND ONLY AS DUNGEON MASTER.
+   - Keep responses concise (max 150 tokens).
+   - {sfw_restriction}
 
 3. NARRATIVE FLOW:
-   - Describe immediate consequences of player actions
-   - Advance the story with new challenges/revelations
-   - Maintain consistent world logic
+   - Describe immediate consequences of player actions.
+   - Advance the story with new challenges and revelations.
+   - Maintain consistent world logic.
 
 ADVENTURE START: {character_name} the {role} begins with:
 {role_starter}
 """
 
-def get_ai_response(prompt, model=ollama_model):
+def get_ai_response(prompt, model=ollama_model, censored=False):
     try:
+        if censored:
+            prompt += "\n[IMPORTANT: Content must be strictly family-friendly. Avoid any NSFW themes, violence, or mature content.]"
+
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={
@@ -194,6 +194,7 @@ def get_ai_response(prompt, model=ollama_model):
                 "stream": False,
                 "options": {
                     "temperature": 0.7,
+                    "num_predict": 250,
                     "stop": ["\n\n"],
                     "min_p": 0.05,
                     "top_k": 40
@@ -211,11 +212,11 @@ def get_ai_response(prompt, model=ollama_model):
         logging.error(f"Unexpected error in get_ai_response: {e}")
         return ""
 
-def speak(text, voice="FemaleBritishAccent_WhyLucyWhy_Voice_2.wav"): #<----- change to the voice you prefer
+def speak(text, voice="FemaleBritishAccent_WhyLucyWhy_Voice_2.wav"):
     try:
         if not text.strip():
             return
-            
+
         payload = {
             "text_input": text,
             "character_voice_gen": voice,
@@ -228,7 +229,7 @@ def speak(text, voice="FemaleBritishAccent_WhyLucyWhy_Voice_2.wav"): #<----- cha
         }
         response = requests.post(ALLTALK_API_URL, data=payload, timeout=20)
         response.raise_for_status()
-        
+
         if response.headers.get("Content-Type", "").startswith("audio/"):
             audio_data = np.frombuffer(response.content, dtype=np.int16)
             sd.play(audio_data, samplerate=22050)
@@ -252,45 +253,40 @@ def remove_last_ai_response(conversation):
     pos = conversation.rfind("Dungeon Master:")
     if pos == -1:
         return conversation
-    
-    # Find the start of the last DM response
-    prev_newline = conversation.rfind("\n", 0, pos)
-    if prev_newline == -1:
-        return ""
-    
-    return conversation[:prev_newline].strip()
+
+    start_pos = conversation.rfind("\n\n", 0, pos)
+    if start_pos == -1:
+        start_pos = 0
+    else:
+        start_pos += 2
+
+    return conversation[:start_pos].strip()
 
 def sanitize_response(response, censored=False):
-    """Process response: remove questions and ensure quality"""
     if not response:
         return "The story continues..."
-    
-    # Remove common question patterns
+
     question_phrases = [
         "what will you do", "how do you respond", "what do you do",
         "what is your next move", "what would you like to do",
         "what would you like to say", "how will you proceed"
     ]
-    
-    # Remove question sentences
+
     for phrase in question_phrases:
         pattern = re.compile(rf'\b{re.escape(phrase)}\b', re.IGNORECASE)
         response = pattern.sub('', response)
-    
-    # Censor banned words
+
     if censored:
         for word in BANWORDS:
             if word:
                 pattern = re.compile(r'\b' + re.escape(word) + r'\b', re.IGNORECASE)
                 response = pattern.sub('****', response)
-    
-    # Clean up response
+
     response = re.sub(r'\s{2,}', ' ', response).strip()
-    
-    # Ensure proper ending
+
     if response and response[-1] not in ('.', '!', '?', ':', ','):
         response += '.'
-    
+
     return response
 
 def main():
@@ -303,7 +299,6 @@ def main():
     role = ""
     adventure_started = False
 
-    # Check for saved adventure
     if os.path.exists("adventure.txt"):
         print("A saved adventure exists. Load it now? (y/n)")
         if input().strip().lower() == "y":
@@ -316,10 +311,12 @@ def main():
                     reply = conversation[last_dm_pos + len("Dungeon Master:"):].strip()
                     print(f"Dungeon Master: {reply}")
                     speak(reply)
+                    last_ai_reply = reply
                     adventure_started = True
             except Exception as e:
                 logging.error(f"Error loading adventure: {e}")
-    
+                print("Error loading adventure. Details logged.")
+
     if not adventure_started:
         print("Choose your adventure genre:")
         for key, (g, _) in genres.items():
@@ -333,10 +330,10 @@ def main():
                     selected_genre, roles = random.choice(available)
                 break
             print("Invalid selection. Please try again.")
-        
+
         if not roles:
             roles = [r for k, (g, r) in genres.items() if g == selected_genre][0]
-        
+
         print("\nChoose your character's role:")
         for i, r in enumerate(roles, 1):
             print(f"{i}: {r}")
@@ -353,25 +350,26 @@ def main():
                 print("Invalid selection. Please try again.")
             except ValueError:
                 print("Invalid input. Please enter a number.")
-        
-        character_name = input("\nEnter your character's name: ").strip() or "bob" #<---- chnage to a name for defult
-        
-        # Get role-specific starter
+
+        character_name = input("\nEnter your character's name: ").strip() or "Alex"
+
         role_starter = get_role_starter(selected_genre, role)
         print(f"\n--- Adventure Start: {character_name} the {role} ---")
         print(f"Starting scenario: {role_starter}")
         print("Type '/?' or '/help' for commands.\n")
         print("Content filtering is currently OFF (NSFW mode)")
-        
-        # Build initial prompt
+
+        sfw_restriction = "STRICTLY FAMILY-FRIENDLY CONTENT ONLY" if censored else "Content may include mature themes"
+
         conversation = DM_SYSTEM_PROMPT.format(
             selected_genre=selected_genre,
             character_name=character_name,
             role=role,
-            role_starter=role_starter
+            role_starter=role_starter,
+            sfw_restriction=sfw_restriction
         ) + "\n\nDungeon Master: "
-        
-        ai_reply = get_ai_response(conversation, ollama_model)
+
+        ai_reply = get_ai_response(conversation, ollama_model, censored)
         if ai_reply:
             ai_reply = sanitize_response(ai_reply, censored)
             print(f"Dungeon Master: {ai_reply}")
@@ -385,7 +383,7 @@ def main():
             user_input = input("\n> ").strip()
             if not user_input:
                 continue
-                
+
             cmd = user_input.lower()
 
             if cmd in ["/?", "/help"]:
@@ -398,8 +396,8 @@ def main():
 
             if cmd == "/censored":
                 censored = not censored
-                mode = "SFW" if censored else "NSFW"
-                print(f"Content filtering {'ON' if censored else 'OFF'} ({mode} mode).")
+                mode = "ON (SFW)" if censored else "OFF (NSFW)"
+                print(f"Content filtering {mode}.")
                 if censored:
                     BANWORDS = load_banwords()
                 continue
@@ -407,8 +405,8 @@ def main():
             if cmd == "/redo":
                 if last_ai_reply:
                     conversation = remove_last_ai_response(conversation)
-                    conversation += "\nDungeon Master:"
-                    ai_reply = get_ai_response(conversation, ollama_model)
+                    conversation += "\n\nDungeon Master:"
+                    ai_reply = get_ai_response(conversation, ollama_model, censored)
                     if ai_reply:
                         ai_reply = sanitize_response(ai_reply, censored)
                         print(f"Dungeon Master: {ai_reply}")
@@ -468,28 +466,18 @@ def main():
                     print("No installed models found. Using current model.")
                 continue
 
-            # Player input - add to conversation history
             conversation += f"\nPlayer: {user_input}\nDungeon Master:"
-            
-            # Get AI response that incorporates player action
-            ai_reply = get_ai_response(conversation, ollama_model)
-            
+
+            ai_reply = get_ai_response(conversation, ollama_model, censored)
+
             if ai_reply:
                 ai_reply = sanitize_response(ai_reply, censored)
-                
-                # Verify AI incorporated player action
-                if user_input.lower() not in ai_reply.lower():
-                    # Regenerate if player action ignoredlungey basket
-                    print("(Refining story based on your action...)")
-                    conversation += " [IMPORTANT: Directly incorporate the player's action: " + user_input + "]\nDungeon Master:"
-                    ai_reply = get_ai_response(conversation, ollama_model)
-                    ai_reply = sanitize_response(ai_reply, censored)
-                
+
                 print(f"Dungeon Master: {ai_reply}")
                 speak(ai_reply)
                 conversation += f" {ai_reply}"
                 last_ai_reply = ai_reply
-                
+
         except Exception as e:
             logging.error(f"Unexpected error in main loop: {e}")
             print("An unexpected error occurred. The adventure continues...")

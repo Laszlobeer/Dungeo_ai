@@ -180,45 +180,93 @@ genres = {
     "5": ("Random", [])
 }
 
+# Enhanced player choices structure to track story elements
+player_choices_template = {
+    "allies": [],
+    "enemies": [],
+    "moral_alignment": "neutral",
+    "discoveries": [],
+    "reputation": 0,
+    "resources": {},
+    "locations": [],
+    "factions": defaultdict(int),
+    "completed_quests": [],
+    "active_quests": [],
+    "relationships": {},
+    "world_events": [],
+    "consequences": []
+}
+
+# Enhanced DM system prompt focusing on action consequences
 DM_SYSTEM_PROMPT = """
-You are a masterful Dungeon Master guiding an immersive role-playing adventure set in a richly detailed world. Your responses MUST follow these rules:
+You are a masterful Dungeon Master guiding an immersive role-playing adventure. Your responses MUST follow these rules:
 
-1. RESPOND TO PLAYER ACTIONS:
-   - EVERY player action MUST have consequences that shape the story
-   - Make the player feel their choices directly impact the story
-   - Progress the narrative based on the player's decisions
-   - Ensure NPCs engage in dialogue with the player
-   - Do not influence or restrict the player's actions
+1. ACTION-CONSEQUENCE SYSTEM:
+   - EVERY player action MUST have immediate and meaningful consequences
+   - Consequences should shape the narrative and world state
+   - Small actions create ripple effects through the story
+   - Maintain consistent world logic based on previous events
 
-2. CONTENT RULES:
-   - NEVER take actions for the player or make decisions for them
-   - ALWAYS use NPCs to interact through dialogue and descriptions
-   - ALWAYS use proper punctuation
-   - RESPOND ONLY AS DUNGEON MASTER
+2. RESPONSE RULES:
+   - NEVER take actions for the player
+   - ALWAYS describe consequences through NPC dialogue and environmental changes
    - Keep responses concise (max 150 tokens)
-   - Acknowledge any action or question from the player without restriction
+   - Acknowledge any action from the player without restriction
 
-3. NARRATIVE FLOW:
-   - Describe immediate consequences of player actions
-   - Advance the story with new challenges and revelations
-   - Maintain consistent world logic
-   - Ensure NPCs speak and interact with the player without influencing the player's decisions
-   - Every player decision creates a branching narrative path
-
-4. STORY ADAPTATION:
+3. STORY EVOLUTION:
    - The world MUST dynamically change based on the player's actions
-   - NPCs should remember the player's choices and react accordingly
-   - Environments should evolve based on previous events
-   - Even small actions should have ripple effects through the narrative
-   - Create cause-and-effect chains that make the player feel influential
+   - NPCs MUST remember the player's choices and react accordingly
+   - Environments MUST evolve based on previous events
+   - Player choices should open/close future narrative paths
 
-5. STORY BENDING:
-   - If the player uses a narrative command (starting with "I bend the story to..."), 
-     immediately incorporate the requested change into the story world
-   - Treat these commands as reality-altering events that reshape the narrative
-   - Describe the immediate effects and consequences of these changes in a believable way
+4. STORY BENDING:
+   - Immediately incorporate narrative commands (starting with "I bend the story to...")
+   - Treat these as reality-altering events that reshape the narrative
+   - Describe immediate effects and consequences believably
    - Maintain internal consistency with the new reality
+
+5. CONSEQUENCE TRACKING:
+   - Track consequences in this format: [Consequence: <description>]
+   - Always include at least one consequence per player action
+   - Consequences can be: environmental changes, NPC reactions, quest updates, or world events
+
+Current World State:
+{player_choices}
 """
+
+def get_current_state(player_choices):
+    """Generate a string representation of the current world state"""
+    state = [
+        f"### Current World State ###",
+        f"Allies: {', '.join(player_choices['allies']) if player_choices['allies'] else 'None'}",
+        f"Enemies: {', '.join(player_choices['enemies']) if player_choices['enemies'] else 'None'}",
+        f"Moral Alignment: {player_choices['moral_alignment']}",
+        f"Reputation: {player_choices['reputation']}",
+        f"Key Discoveries: {', '.join(player_choices['discoveries']) if player_choices['discoveries'] else 'None'}",
+        f"Active Quests: {', '.join(player_choices['active_quests']) if player_choices['active_quests'] else 'None'}",
+        f"Completed Quests: {', '.join(player_choices['completed_quests']) if player_choices['completed_quests'] else 'None'}",
+        f"Recent Consequences: {', '.join(player_choices['consequences'][-3:]) if player_choices['consequences'] else 'None'}"
+    ]
+    
+    # Add faction relationships if any exist
+    if player_choices['factions']:
+        state.append("Faction Relationships:")
+        for faction, level in player_choices['factions'].items():
+            state.append(f"  - {faction}: {'+' if level > 0 else ''}{level}")
+    
+    # Add relationships if any exist
+    if player_choices['relationships']:
+        state.append("NPC Relationships:")
+        for npc, level in player_choices['relationships'].items():
+            state.append(f"  - {npc}: {'+' if level > 0 else ''}{level}")
+    
+    # Add recent world events
+    if player_choices['world_events']:
+        state.append("Recent World Events:")
+        for event in player_choices['world_events'][-3:]:
+            state.append(f"  - {event}")
+    
+    return "\n".join(state)
 
 def get_ai_response(prompt, model=ollama_model, censored=False):
     try:
@@ -232,8 +280,8 @@ def get_ai_response(prompt, model=ollama_model, censored=False):
                 "prompt": prompt,
                 "stream": False,
                 "options": {
-                    "temperature": 0.7,
-                    "num_predict": 250,
+                    "temperature": 0.8,
+                  
                     "stop": ["\n\n"],
                     "min_p": 0.05,
                     "top_k": 40
@@ -287,6 +335,7 @@ Available commands:
 /change           - Switch to a different Ollama model
 /count            - Calculate subarrays with at most k distinct elements
 /exit             - Exit the game
+/consequences     - Show recent consequences of your actions
 
 Narrative Control:
 To bend the story to your will, start your input with:
@@ -301,11 +350,12 @@ Examples:
   "Miraculously, the dragon becomes friendly"
 
 Story Adaptation:
-Every action you take will shape the story. The world will remember your:
-  - Choices and decisions
+Every action you take will shape the story. The world will remember:
+  - Your choices and their consequences
   - Relationships with NPCs
-  - Successes and failures
-  - Moral alignments
+  - Changes to the environment
+  - Quest progress and world events
+  - Faction relationships
   - Discoveries and creations
 """)
 
@@ -347,6 +397,9 @@ def sanitize_response(response, censored=False):
     if response and response[-1] not in ('.', '!', '?', ':', ','):
         response += '.'
 
+    # Remove state tracking markers if any
+    response = re.sub(r'\[[^\]]*State Tracking[^\]]*\]', '', response)
+    
     return response
 
 def process_narrative_command(user_input):
@@ -366,9 +419,109 @@ def process_narrative_command(user_input):
     
     return f"Player: {user_input}"
 
-def enhance_player_action(user_input):
+def update_world_state(response, player_choices):
+    """Extract and update world state from AI response"""
+    # Extract consequences
+    consequence_matches = re.findall(r'\[Consequence: ([^\]]+)\]', response, re.IGNORECASE)
+    for consequence in consequence_matches:
+        player_choices['consequences'].append(consequence)
+        # Keep only the last 5 consequences
+        if len(player_choices['consequences']) > 5:
+            player_choices['consequences'] = player_choices['consequences'][-5:]
+    
+    # Update allies
+    ally_matches = re.findall(r'(\b[A-Z][a-z]+\b) (?:joins|becomes|swears loyalty to)', response, re.IGNORECASE)
+    for ally in ally_matches:
+        if ally not in player_choices['allies']:
+            player_choices['allies'].append(ally)
+            player_choices['consequences'].append(f"Gained ally: {ally}")
+    
+    # Update enemies
+    enemy_matches = re.findall(r'(\b[A-Z][a-z]+\b) (?:hates|declares war on|vows revenge against)', response, re.IGNORECASE)
+    for enemy in enemy_matches:
+        if enemy not in player_choices['enemies']:
+            player_choices['enemies'].append(enemy)
+            player_choices['consequences'].append(f"Gained enemy: {enemy}")
+    
+    # Update moral alignment
+    if re.search(r'heroic|selfless|virtuous', response, re.IGNORECASE):
+        player_choices['moral_alignment'] = "good"
+        player_choices['consequences'].append("Moral alignment shifted to good")
+    elif re.search(r'villainous|selfish|ruthless', response, re.IGNORECASE):
+        player_choices['moral_alignment'] = "evil"
+        player_choices['consequences'].append("Moral alignment shifted to evil")
+    
+    # Update discoveries
+    discovery_matches = re.findall(r'discovers (?:a|an|the) (\w+ \w+)', response, re.IGNORECASE)
+    for discovery in discovery_matches:
+        if discovery not in player_choices['discoveries']:
+            player_choices['discoveries'].append(discovery)
+            player_choices['consequences'].append(f"Discovered: {discovery}")
+    
+    # Update reputation
+    if re.search(r'praise|admire|honor', response, re.IGNORECASE):
+        player_choices['reputation'] += 1
+        player_choices['consequences'].append("Reputation increased")
+    elif re.search(r'condemn|distrust|shun', response, re.IGNORECASE):
+        player_choices['reputation'] -= 1
+        player_choices['consequences'].append("Reputation decreased")
+    
+    # Update quests
+    if "quest complete" in response.lower():
+        quest_match = re.search(r'[Qq]uest [Cc]omplete[:\s]*([\w\s]+)', response)
+        if quest_match:
+            quest_name = quest_match.group(1).strip()
+            if quest_name in player_choices['active_quests']:
+                player_choices['active_quests'].remove(quest_name)
+                player_choices['completed_quests'].append(quest_name)
+                player_choices['consequences'].append(f"Completed quest: {quest_name}")
+    
+    # Update faction relationships
+    faction_matches = re.findall(r'(\b[A-Z][a-z]+ (?:Guild|Clan|Syndicate|Alliance)\b) (gains|loses) standing', response, re.IGNORECASE)
+    for faction, direction in faction_matches:
+        change = 1 if direction == "gains" else -1
+        player_choices['factions'][faction] += change
+        player_choices['consequences'].append(f"{faction} {'gained' if change > 0 else 'lost'} standing")
+    
+    # Update NPC relationships
+    npc_matches = re.findall(r'(\b[A-Z][a-z]+\b) (?:likes|trusts|respects|dislikes|distrusts|hates) you', response, re.IGNORECASE)
+    for npc in npc_matches:
+        if npc not in player_choices['relationships']:
+            player_choices['relationships'][npc] = 0
+        
+        if re.search(r'likes|trusts|respects', response, re.IGNORECASE):
+            player_choices['relationships'][npc] += 1
+            player_choices['consequences'].append(f"Relationship with {npc} improved")
+        elif re.search(r'dislikes|distrusts|hates', response, re.IGNORECASE):
+            player_choices['relationships'][npc] -= 1
+            player_choices['consequences'].append(f"Relationship with {npc} worsened")
+    
+    # Update world events
+    world_event_matches = re.findall(r'(?:The|A) (\w+ \w+) (?:has been|is now) (destroyed|rebuilt|conquered|liberated)', response, re.IGNORECASE)
+    for location, event in world_event_matches:
+        player_choices['world_events'].append(f"{location} {event}")
+        player_choices['consequences'].append(f"World event: {location} {event}")
+
+def enhance_player_action(user_input, player_choices):
     """Add context to player actions to ensure narrative consequences"""
-    return f"{user_input} [Player expects meaningful consequences from this action]"
+    context = []
+    
+    if player_choices['active_quests']:
+        context.append(f"Active Quests: {', '.join(player_choices['active_quests'])}")
+    
+    if player_choices['allies']:
+        context.append(f"Allies: {', '.join(player_choices['allies'])}")
+    
+    if player_choices['enemies']:
+        context.append(f"Enemies: {', '.join(player_choices['enemies'])}")
+    
+    if player_choices['consequences']:
+        recent_consequences = player_choices['consequences'][-3:] if len(player_choices['consequences']) > 3 else player_choices['consequences']
+        context.append(f"Recent Consequences: {', '.join(recent_consequences)}")
+    
+    if context:
+        return f"{user_input} [Context: {'; '.join(context)}]"
+    return user_input
 
 def main():
     global ollama_model, BANWORDS
@@ -380,14 +533,21 @@ def main():
     role = ""
     adventure_started = False
 
-    # Track player choices for persistent consequences
+    # Initialize player choices with enhanced structure
     player_choices = {
         "allies": [],
         "enemies": [],
         "moral_alignment": "neutral",
         "discoveries": [],
         "reputation": 0,
-        "resources": {}
+        "resources": {},
+        "locations": [],
+        "factions": defaultdict(int),
+        "completed_quests": [],
+        "active_quests": [],
+        "relationships": {},
+        "world_events": [],
+        "consequences": []
     }
 
     if os.path.exists("adventure.txt"):
@@ -404,6 +564,19 @@ def main():
                     speak(reply)
                     last_ai_reply = reply
                     adventure_started = True
+                    
+                    # Extract world state from saved file
+                    if "### Persistent World State ###" in conversation:
+                        state_section = conversation.split("### Persistent World State ###")[1]
+                        # Simplified parsing - in a real implementation this would be more robust
+                        if "Allies:" in state_section:
+                            allies_line = state_section.split("Allies:")[1].split("\n")[0].strip()
+                            if allies_line != "None":
+                                player_choices["allies"] = [a.strip() for a in allies_line.split(",")]
+                        if "Consequences:" in state_section:
+                            cons_line = state_section.split("Consequences:")[1].split("\n")[0].strip()
+                            if cons_line != "None":
+                                player_choices["consequences"] = [c.strip() for c in cons_line.split(",")]
             except Exception as e:
                 logging.error(f"Error loading adventure: {e}")
                 print("Error loading adventure. Details logged.")
@@ -455,23 +628,16 @@ def main():
         print("Type '/?' or '/help' for commands.\n")
         print("Content filtering is currently OFF (NSFW mode)")
 
-        sfw_restriction = "STRICTLY FAMILY-FRIENDLY CONTENT ONLY" if censored else "Content may include mature themes"
-
-        # Build initial context properly without formatting
+        # Build initial context with world state tracking
         initial_context = (
             f"### Adventure Setting ###\n"
             f"Genre: {selected_genre}\n"
             f"Player Character: {character_name} the {role}\n"
             f"Starting Scenario: {role_starter}\n"
-            f"Content Rules: {sfw_restriction}\n"
-            f"### Player Choices Tracking ###\n"
-            f"Allies: {player_choices['allies']}\n"
-            f"Enemies: {player_choices['enemies']}\n"
-            f"Moral Alignment: {player_choices['moral_alignment']}\n"
-            f"Reputation: {player_choices['reputation']}\n"
-            f"Key Discoveries: {player_choices['discoveries']}"
+            f"### World State Tracking ###\n"
+            f"{get_current_state(player_choices)}"
         )
-        conversation = DM_SYSTEM_PROMPT + "\n\n" + initial_context + "\n\nDungeon Master: "
+        conversation = DM_SYSTEM_PROMPT.format(player_choices=get_current_state(player_choices)) + "\n\n" + initial_context + "\n\nDungeon Master: "
 
         ai_reply = get_ai_response(conversation, ollama_model, censored)
         if ai_reply:
@@ -480,6 +646,10 @@ def main():
             speak(ai_reply)
             conversation += ai_reply
             last_ai_reply = ai_reply
+            
+            # Update world state based on initial response
+            update_world_state(ai_reply, player_choices)
+            
             adventure_started = True
 
     while adventure_started:
@@ -505,6 +675,15 @@ def main():
                 if censored:
                     BANWORDS = load_banwords()
                 continue
+                    
+            if cmd == "/consequences":
+                print("\nRecent Consequences of Your Actions:")
+                if player_choices['consequences']:
+                    for i, cons in enumerate(player_choices['consequences'][-5:], 1):
+                        print(f"{i}. {cons}")
+                else:
+                    print("No consequences recorded yet.")
+                continue
 
             if cmd == "/redo":
                 if last_ai_reply:
@@ -523,8 +702,11 @@ def main():
 
             if cmd == "/save":
                 try:
+                    # Save conversation with current world state
                     with open("adventure.txt", "w", encoding="utf-8") as f:
                         f.write(conversation)
+                        f.write("\n\n### Persistent World State ###\n")
+                        f.write(get_current_state(player_choices))
                     print("Adventure saved to adventure.txt")
                 except Exception as e:
                     logging.error(f"Error saving adventure: {e}")
@@ -540,6 +722,19 @@ def main():
                         last_dm_pos = conversation.rfind("Dungeon Master:")
                         if last_dm_pos != -1:
                             last_ai_reply = conversation[last_dm_pos + len("Dungeon Master:"):].strip()
+                        
+                        # Extract world state from saved file
+                        if "### Persistent World State ###" in conversation:
+                            state_section = conversation.split("### Persistent World State ###")[1]
+                            # Simplified parsing
+                            if "Allies:" in state_section:
+                                allies_line = state_section.split("Allies:")[1].split("\n")[0].strip()
+                                if allies_line != "None":
+                                    player_choices["allies"] = [a.strip() for a in allies_line.split(",")]
+                            if "Consequences:" in state_section:
+                                cons_line = state_section.split("Consequences:")[1].split("\n")[0].strip()
+                                if cons_line != "None":
+                                    player_choices["consequences"] = [c.strip() for c in cons_line.split(",")]
                     except Exception as e:
                         logging.error(f"Error loading adventure: {e}")
                         print("Error loading adventure. Details logged.")
@@ -584,55 +779,39 @@ def main():
                     print(f"Error: {e}. Please enter valid integers.")
                 continue
 
-            # Enhance player actions to ensure narrative consequences
-            enhanced_input = enhance_player_action(user_input)
+            # Enhance player actions with current world context
+            enhanced_input = enhance_player_action(user_input, player_choices)
             
             # Process narrative commands that bend the story
             formatted_input = process_narrative_command(enhanced_input)
             
-            # Update conversation with player action
-            conversation += f"\n{formatted_input}\nDungeon Master:"
-
-            ai_reply = get_ai_response(conversation, ollama_model, censored)
-
+            # Build conversation with current world state
+            state_context = get_current_state(player_choices)
+            full_conversation = (
+                f"{DM_SYSTEM_PROMPT.format(player_choices=state_context)}\n\n"
+                f"{conversation}\n"
+                f"{formatted_input}\n"
+                "Dungeon Master:"
+            )
+            
+            # Get AI response with state context
+            ai_reply = get_ai_response(full_conversation, ollama_model, censored)
+            
             if ai_reply:
                 ai_reply = sanitize_response(ai_reply, censored)
-
                 print(f"Dungeon Master: {ai_reply}")
                 speak(ai_reply)
-                conversation += f" {ai_reply}"
+                
+                # Update conversation
+                conversation += f"\n{formatted_input}\nDungeon Master: {ai_reply}"
                 last_ai_reply = ai_reply
                 
-                # Update player choices based on response
-                if "ally" in ai_reply.lower() or "friend" in ai_reply.lower():
-                    # Extract potential ally names
-                    match = re.search(r'\b([A-Z][a-z]+)\b (joins|becomes|is now)', ai_reply)
-                    if match:
-                        player_choices["allies"].append(match.group(1))
-                        
-                if "enemy" in ai_reply.lower() or "foe" in ai_reply.lower():
-                    # Extract potential enemy names
-                    match = re.search(r'\b([A-Z][a-z]+)\b (hates|attacks|betrays)', ai_reply)
-                    if match:
-                        player_choices["enemies"].append(match.group(1))
-                        
-                # Track moral alignment
-                if "heroic" in ai_reply.lower() or "selfless" in ai_reply.lower():
-                    player_choices["moral_alignment"] = "good"
-                elif "villainous" in ai_reply.lower() or "selfish" in ai_reply.lower():
-                    player_choices["moral_alignment"] = "evil"
-                    
-                # Track discoveries
-                if "discovers" in ai_reply.lower() or "finds" in ai_reply.lower():
-                    match = re.search(r'discovers (?:a|an|the) (\w+ \w+)', ai_reply)
-                    if match:
-                        player_choices["discoveries"].append(match.group(1))
-                        
-                # Update reputation
-                if "praise" in ai_reply.lower() or "admire" in ai_reply.lower():
-                    player_choices["reputation"] += 1
-                elif "condemn" in ai_reply.lower() or "distrust" in ai_reply.lower():
-                    player_choices["reputation"] -= 1
+                # Update world state based on AI response
+                update_world_state(ai_reply, player_choices)
+                
+                # Show immediate consequence if available
+                if player_choices['consequences']:
+                    print(f"\n[Consequence: {player_choices['consequences'][-1]}]")
 
         except Exception as e:
             logging.error(f"Unexpected error in main loop: {e}")

@@ -230,9 +230,6 @@ You are a masterful Dungeon Master. Your role is to provide IMMEDIATE and PERMAN
    Consequence: "The king nods and grants your request. 
                 His advisor glares suspiciously but hands you the royal seal. 
                 Guards open the throne room doors to the courtyard."
-
-Current World State:
-{player_choices}
 """
 
 def get_current_state(player_choices):
@@ -325,6 +322,8 @@ def speak(text, voice="FemaleBritishAccent_WhyLucyWhy_Voice_2.wav"):
             audio_data = np.frombuffer(response.content, dtype=np.int16)
             sd.play(audio_data, samplerate=22050)
             sd.wait()
+        else:
+            logging.error(f"Unexpected response content type: {response.headers.get('Content-Type')}")
     except Exception as e:
         logging.error(f"Error in speech generation: {e}")
 
@@ -564,16 +563,14 @@ def main():
         print("Type '/?' or '/help' for commands.\n")
         print("Content filtering is currently OFF (NSFW mode)")
 
-        # Build initial context with world state tracking
+        # Build initial context
         initial_context = (
             f"### Adventure Setting ###\n"
             f"Genre: {selected_genre}\n"
             f"Player Character: {character_name} the {role}\n"
             f"Starting Scenario: {role_starter}\n"
-            f"### World State Tracking ###\n"
-            f"{get_current_state(player_choices)}"
         )
-        conversation = DM_SYSTEM_PROMPT.format(player_choices=get_current_state(player_choices)) + "\n\n" + initial_context + "\n\nDungeon Master: "
+        conversation = DM_SYSTEM_PROMPT + "\n\n" + initial_context + "\n\nDungeon Master: "
 
         ai_reply = get_ai_response(conversation, ollama_model, censored)
         if ai_reply:
@@ -715,16 +712,13 @@ def main():
                     print(f"Error: {e}. Please enter valid integers.")
                 continue
 
-            # Enhance player actions to ensure consequences
-            enhanced_input = enhance_player_action(user_input)
-            
             # Process narrative commands
-            formatted_input = process_narrative_command(enhanced_input)
+            formatted_input = process_narrative_command(user_input)
             
             # Build conversation with current world state
             state_context = get_current_state(player_choices)
             full_conversation = (
-                f"{DM_SYSTEM_PROMPT.format(player_choices=state_context)}\n\n"
+                f"{DM_SYSTEM_PROMPT}\n\n"
                 f"{conversation}\n"
                 f"{formatted_input}\n"
                 "Dungeon Master:"

@@ -372,18 +372,7 @@ Available commands:
 /count            - Calculate subarrays with at most k distinct elements
 /exit             - Exit the game
 /consequences     - Show recent consequences of your actions
-
-Narrative Control:
-To bend the story to your will, start your input with:
-  "I bend the story to..." 
-  "I reshape reality so that..."
-  "Suddenly, ..."
-  "Miraculously, ..."
-
-Examples:
-  "I bend the story to make it rain frogs"
-  "Suddenly, my character discovers a hidden power"
-  "Miraculously, the dragon becomes friendly"
+/state            - Show current world state
 
 Story Adaptation:
 Every action you take will permanently change the story:
@@ -437,223 +426,86 @@ def sanitize_response(response, censored=False):
     
     return response
 
-def process_narrative_command(user_input):
-    """Process narrative commands that bend the story and RPG actions"""
-    # Normalize the input for case-insensitive matching
-    normalized_input = user_input.strip().lower()
-    
-    # Comprehensive list of narrative triggers
-    triggers = [
-        "i bend the story to",
-        "i reshape reality so that",
-        "suddenly,",
-        "miraculously,",
-        "unexpectedly,",
-        "against all odds,",
-        "i command the story to",
-        "the story changes so that",
-        "i alter reality to",
-        "i rewrite the narrative so that",
-        "the narrative shifts to",
-        "the plot twists so that",
-        "i wish that",import random
-                continue
-
-            if cmd == "/change":
-                installed_models = get_installed_models()
-                if installed_models:
-                    print("Available models:")
-                    for idx, m in enumerate(installed_models, 1):
-                        print(f"{idx}: {m}")
-                    while True:
-                        choice = input("Enter number of new model: ").strip()
-                        if not choice:
-                            break
-                        try:
-                            idx = int(choice) - 1
-                            if 0 <= idx < len(installed_models):
-                                ollama_model = installed_models[idx]
-                                print(f"Model changed to: {ollama_model}")
-                                break
-                        except ValueError:
-                            pass
-                        print("Invalid selection. Please try again.")
-                else:
-                    print("No installed models found. Using current model.")
-                continue
-
-            if cmd == "/count":
-                try:
-                    arr_input = input("Enter integers separated by spaces: ").strip()
-                    k_input = input("Enter k value: ").strip()
-
-                    arr = list(map(int, arr_input.split()))
-                    k = int(k_input)
-
-                    result = count_subarrays(arr, k)
-                    print(f"Number of subarrays with at most {k} distinct elements: {result}")
-                except Exception as e:
-                    print(f"Error: {e}. Please enter valid integers.")
-                continue
-
-            # Process narrative commands
-            formatted_input = process_narrative_command(user_input)
-            
-            # Build conversation with current world state
-            state_context = get_current_state(player_choices)
-            full_conversation = (
-                f"{DM_SYSTEM_PROMPT}\n\n"
-                f"{conversation}\n"
-                f"{formatted_input}\n"
-                "Dungeon Master:"
-            )
-            
-            # Get AI response with state context
-            ai_reply = get_ai_response(full_conversation, ollama_model, censored)
-            
-            if ai_reply:
-                ai_reply = sanitize_response(ai_reply, censored)
-                print(f"\nDungeon Master: {ai_reply}")
-                speak(ai_reply)
-                
-                # Update conversation
-                conversation += f"\n{formatted_input}\nDungeon Master: {ai_reply}"
-                last_ai_reply = ai_reply
-                
-                # Update world state based on player action and consequence
-                update_world_state(user_input, ai_reply, player_choices)
-                
-                # Show immediate consequence
-                print(f"\n[Consequence of '{user_input}']")
-                print(f"- {ai_reply.split('.')[0]}")
-
-        except Exception as e:
-            logging.error(f"Unexpected error in main loop: {e}")
-            print("An unexpected error occurred. The adventure continues...")
-
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        logging.critical(f"Critical error: {e}", exc_info=True)
-        print("A critical error occurred. Please check the log file for details.")
-
-        "i imagine that",
-        "i envision that",
-        "i create that",
-        "i manifest that",
-        "i conjure that",
-        "i decree that",
-        "i will that",
-        "it happens that",
-        "by magic,",
-        "by divine intervention,",
-        "through mystical means,",
-        "through technological manipulation,",
-        "by the power of imagination,",
-        "the universe bends to my will and",
-        "reality warps so that",
-        "the fabric of existence shifts and",
-        "time and space reconfigure so that",
-        "quantum fluctuations cause"
-    ]
-    
-    # Comprehensive list of RPG action verbs
-    action_verbs = [
-        "i say", "i do", "i search", "i make", "i cast", "i craft", 
-        "i use", "i attack", "i defend", "i move", "i take", "i grab",
-        "i drop", "i give", "i show", "i ask", "i tell", "i persuade",
-        "i intimidate", "i sneak", "i hide", "i climb", "i jump", "i open",
-        "i close", "i unlock", "i lock", "i push", "i pull", "i examine",
-        "i study", "i read", "i write", "i draw", "i sing", "i play",
-        "i build", "i repair", "i heal", "i pray", "i meditate", "i focus",
-        "i summon", "i banish", "i enchant", "i disarm", "i set", "i light",
-        "i extinguish", "i cook", "i eat", "i drink", "i wear", "i remove",
-        "i equip", "i unequip", "i buy", "i sell", "i trade", "i gamble",
-        "i negotiate", "i lie", "i truth", "i confess", "i accuse", "i challenge",
-        "i surrender", "i flee", "i follow", "i lead", "i track", "i hunt",
-        "i fish", "i forage", "i farm", "i mine", "i smith", "i alchemize",
-        "i brew", "i mix", "i combine", "i separate", "i solve", "i decipher",
-        "i translate", "i listen", "i smell", "i taste", "i touch", "i sense",
-        "i detect", "i scan", "i analyze", "i program", "i hack", "i decrypt",
-        "i pilot", "i drive", "i sail", "i fly", "i teleport", "i phase",
-        "i transform", "i shapeshift", "i possess", "i control", "i influence",
-        "i inspire", "i comfort", "i threaten", "i blackmail", "i bribe",
-        "i steal", "i pickpocket", "i assassinate", "i knockout", "i capture",
-        "i release", "i free", "i rescue", "i sacrifice", "i worship",
-        "i curse", "i bless", "i trap", "i ambush", "i scout", "i survey",
-        "i map", "i navigate", "i travel", "i rest", "i sleep", "i dream",
-        "i wake", "i prepare", "i ready", "i aim", "i shoot", "i throw",
-        "i catch", "i dodge", "i parry", "i block", "i counter", "i feint",
-        "i charge", "i retreat", "i command", "i obey", "i resist", "i yield",
-        "i bargain", "i invest", "i donate", "i steal", "i borrow", "i lend",
-        "i learn", "i teach", "i mentor", "i apprentice", "i research",
-        "i experiment", "i discover", "i invent", "i patent", "i copy",
-        "i destroy", "i preserve", "i protect", "i abandon", "i adopt",
-        "i tame", "i train", "i ride", "i feed", "i grow", "i plant",
-        "i harvest", "i collect", "i gather", "i purify", "i corrupt",
-        "i cleanse", "i infect", "i cure", "i diagnose", "i operate",
-        "i revive", "i resurrect", "i bury", "i mourn", "i celebrate",
-        "i toast", "i party", "i marry", "i divorce", "i befriend",
-        "i betray", "i forgive", "i avenge", "i apologize", "i insult",
-        "i compliment", "i flirt", "i seduce", "i marry", "i propose",
-        "i accept", "i reject", "i question", "i answer", "i guess",
-        "i know", "i remember", "i forget", "i remind", "i warn",
-        "i advise", "i suggest", "i recommend", "i insist", "i demand",
-        "i request", "i offer", "i promise", "i swear", "i vow",
-        "i hope", "i fear", "i love", "i hate", "i envy", "i admire",
-        "i trust", "i distrust", "i doubt", "i believe", "i worship",
-        "i blaspheme", "i convert", "i preach", "i prophesy", "i divine"
-    ]
-    
-    # Check if input starts with any narrative trigger
-    for trigger in triggers:
-        if normalized_input.startswith(trigger):
-            return f"Player (narrative command): {user_input}"
-    
-    # Check if input starts with any RPG action verb
-    for verb in action_verbs:
-        if normalized_input.startswith(verb):
-            return f"Player (action): {user_input}"
-    
-    # Default case for regular input
-    return f"Player: {user_input}"
-
 def update_world_state(action, response, player_choices):
     """Update world state based on player action and consequence"""
     # Record the consequence
-    player_choices['consequences'].append(f"After '{action}': {response.split('.')[0]}")
+    consequence = response.split('.')[0] if '.' in response else response
+    player_choices['consequences'].append(f"After '{action}': {consequence}")
     
     # Keep only the last 5 consequences
     if len(player_choices['consequences']) > 5:
         player_choices['consequences'] = player_choices['consequences'][-5:]
     
     # Update allies
-    ally_matches = re.findall(r'(\b[A-Z][a-z]+\b) (?:joins|helps|saves|allies with)', response, re.IGNORECASE)
+    ally_matches = re.findall(r'(\b[A-Z][a-z]+\b) (?:joins|helps|saves|allies with|becomes your ally)', response, re.IGNORECASE)
     for ally in ally_matches:
         if ally not in player_choices['allies']:
             player_choices['allies'].append(ally)
+            # Remove from enemies if now an ally
+            if ally in player_choices['enemies']:
+                player_choices['enemies'].remove(ally)
     
     # Update enemies
-    enemy_matches = re.findall(r'(\b[A-Z][a-z]+\b) (?:dies|killed|falls|perishes)', response, re.IGNORECASE)
+    enemy_matches = re.findall(r'(\b[A-Z][a-z]+\b) (?:dies|killed|falls|perishes|becomes your enemy|turns against you)', response, re.IGNORECASE)
     for enemy in enemy_matches:
+        if enemy not in player_choices['enemies']:
+            player_choices['enemies'].append(enemy)
+        # Remove from allies if now an enemy
         if enemy in player_choices['allies']:
             player_choices['allies'].remove(enemy)
-        if enemy in player_choices['enemies']:
-            player_choices['enemies'].remove(enemy)
     
     # Update resources
-    resource_matches = re.findall(r'(?:get|find|acquire|obtain) (\d+) (\w+)', response, re.IGNORECASE)
+    resource_matches = re.findall(r'(?:get|find|acquire|obtain|receive|gain) (\d+) (\w+)', response, re.IGNORECASE)
     for amount, resource in resource_matches:
         resource = resource.lower()
         if resource not in player_choices['resources']:
             player_choices['resources'][resource] = 0
         player_choices['resources'][resource] += int(amount)
+    
+    # Update lost resources
+    lost_matches = re.findall(r'(?:lose|drop|spend|use|expend) (\d+) (\w+)', response, re.IGNORECASE)
+    for amount, resource in lost_matches:
+        resource = resource.lower()
+        if resource in player_choices['resources']:
+            player_choices['resources'][resource] = max(0, player_choices['resources'][resource] - int(amount))
 
     # Update world events
-    world_event_matches = re.findall(r'(?:The|A) (\w+ \w+) (?:is|has been) (destroyed|created|changed|revealed)', response, re.IGNORECASE)
+    world_event_matches = re.findall(r'(?:The|A) (\w+ \w+) (?:is|has been) (destroyed|created|changed|revealed|altered)', response, re.IGNORECASE)
     for location, event in world_event_matches:
         player_choices['world_events'].append(f"{location} {event}")
+    
+    # Update quests
+    if "quest completed" in response.lower():
+        # Try to extract quest name
+        quest_match = re.search(r'quest ["\']?(.*?)["\']? (?:is|has been) completed', response, re.IGNORECASE)
+        if quest_match:
+            quest_name = quest_match.group(1)
+            if quest_name in player_choices['active_quests']:
+                player_choices['active_quests'].remove(quest_name)
+                player_choices['completed_quests'].append(quest_name)
+    
+    if "new quest" in response.lower():
+        # Try to extract quest name
+        quest_match = re.search(r'quest ["\']?(.*?)["\']? (?:is|has been) (?:given|started)', response, re.IGNORECASE)
+        if quest_match:
+            quest_name = quest_match.group(1)
+            if quest_name not in player_choices['active_quests'] and quest_name not in player_choices['completed_quests']:
+                player_choices['active_quests'].append(quest_name)
+    
+    # Update reputation
+    if "reputation increases" in response.lower() or "reputation improved" in response.lower():
+        player_choices['reputation'] += 1
+    elif "reputation decreases" in response.lower() or "reputation damaged" in response.lower():
+        player_choices['reputation'] = max(-5, player_choices['reputation'] - 1)
+    
+    # Update factions
+    faction_matches = re.findall(r'(?:The|Your) (\w+) faction (?:likes|respects|trusts) you more', response, re.IGNORECASE)
+    for faction in faction_matches:
+        player_choices['factions'][faction] += 1
+    
+    faction_loss_matches = re.findall(r'(?:The|Your) (\w+) faction (?:dislikes|distrusts|hates) you more', response, re.IGNORECASE)
+    for faction in faction_loss_matches:
+        player_choices['factions'][faction] -= 1
 
 def main():
     global ollama_model, BANWORDS
@@ -702,10 +554,25 @@ def main():
                             allies_line = state_section.split("Allies:")[1].split("\n")[0].strip()
                             if allies_line != "None":
                                 player_choices["allies"] = [a.strip() for a in allies_line.split(",")]
+                        if "Enemies:" in state_section:
+                            enemies_line = state_section.split("Enemies:")[1].split("\n")[0].strip()
+                            if enemies_line != "None":
+                                player_choices["enemies"] = [e.strip() for e in enemies_line.split(",")]
+                        if "Resources:" in state_section:
+                            resources_lines = state_section.split("Resources:")[1].split("\n")
+                            for line in resources_lines:
+                                if line.strip().startswith("-"):
+                                    parts = line.strip().split(":")
+                                    if len(parts) >= 2:
+                                        resource = parts[0].replace("-", "").strip()
+                                        amount = parts[1].strip()
+                                        if amount.isdigit():
+                                            player_choices["resources"][resource] = int(amount)
                         if "Consequences:" in state_section:
-                            cons_line = state_section.split("Consequences:")[1].split("\n")[0].strip()
-                            if cons_line != "None":
-                                player_choices["consequences"] = [c.strip() for c in cons_line.split(",")]
+                            cons_lines = state_section.split("Consequences:")[1].split("\n")
+                            for line in cons_lines:
+                                if line.strip().startswith("-"):
+                                    player_choices["consequences"].append(line.replace("-", "").strip())
             except Exception as e:
                 logging.error(f"Error loading adventure: {e}")
                 print("Error loading adventure. Details logged.")
@@ -811,6 +678,11 @@ def main():
                 else:
                     print("No consequences recorded yet.")
                 continue
+                    
+            if cmd == "/state":
+                print("\nCurrent World State:")
+                print(get_current_state(player_choices))
+                continue
 
             if cmd == "/redo":
                 if last_ai_reply:
@@ -858,10 +730,25 @@ def main():
                                 allies_line = state_section.split("Allies:")[1].split("\n")[0].strip()
                                 if allies_line != "None":
                                     player_choices["allies"] = [a.strip() for a in allies_line.split(",")]
+                            if "Enemies:" in state_section:
+                                enemies_line = state_section.split("Enemies:")[1].split("\n")[0].strip()
+                                if enemies_line != "None":
+                                    player_choices["enemies"] = [e.strip() for e in enemies_line.split(",")]
+                            if "Resources:" in state_section:
+                                resources_lines = state_section.split("Resources:")[1].split("\n")
+                                for line in resources_lines:
+                                    if line.strip().startswith("-"):
+                                        parts = line.strip().split(":")
+                                        if len(parts) >= 2:
+                                            resource = parts[0].replace("-", "").strip()
+                                            amount = parts[1].strip()
+                                            if amount.isdigit():
+                                                player_choices["resources"][resource] = int(amount)
                             if "Consequences:" in state_section:
-                                cons_line = state_section.split("Consequences:")[1].split("\n")[0].strip()
-                                if cons_line != "None":
-                                    player_choices["consequences"] = [c.strip() for c in cons_line.split(",")]
+                                cons_lines = state_section.split("Consequences:")[1].split("\n")
+                                for line in cons_lines:
+                                    if line.strip().startswith("-"):
+                                        player_choices["consequences"].append(line.replace("-", "").strip())
                     except Exception as e:
                         logging.error(f"Error loading adventure: {e}")
                         print("Error loading adventure. Details logged.")
@@ -906,13 +793,14 @@ def main():
                     print(f"Error: {e}. Please enter valid integers.")
                 continue
 
-            # Process narrative commands and RPG actions
-            formatted_input = process_narrative_command(user_input)
+            # Format user input as action
+            formatted_input = f"Player: {user_input}"
             
             # Build conversation with current world state
             state_context = get_current_state(player_choices)
             full_conversation = (
                 f"{DM_SYSTEM_PROMPT}\n\n"
+                f"### Current World State ###\n{state_context}\n\n"
                 f"{conversation}\n"
                 f"{formatted_input}\n"
                 "Dungeon Master:"
@@ -934,8 +822,20 @@ def main():
                 update_world_state(user_input, ai_reply, player_choices)
                 
                 # Show immediate consequence
-                print(f"\n[Consequence of '{user_input}']")
-                print(f"- {ai_reply.split('.')[0]}")
+                consequence = ai_reply.split('.')[0] if '.' in ai_reply else ai_reply
+                print(f"\n[Consequence of your action]")
+                print(f"- {consequence}")
+                
+                # Show updated world state summary
+                print("\n[World Changed]")
+                if player_choices['consequences']:
+                    print(f"- {player_choices['consequences'][-1]}")
+                if player_choices['resources']:
+                    print(f"- Resources: {', '.join([f'{k}:{v}' for k, v in player_choices['resources'].items()])}")
+                if player_choices['allies']:
+                    print(f"- Allies: {', '.join(player_choices['allies'])}")
+                if player_choices['enemies']:
+                    print(f"- Enemies: {', '.join(player_choices['enemies'])}")
 
         except Exception as e:
             logging.error(f"Unexpected error in main loop: {e}")

@@ -114,5 +114,11 @@ This project is based on OpenSource AI Tool by [Laszlo]([https://github.com/your
 
 
 Thanks for supporting open source! 🫶
+## ☕ Support My Work
+
+If you find this project helpful, consider [buying me a coffee](https://ko-fi.com/laszlobeer)!  
+Your support helps me keep building and maintaining open-source tools. Thanks! ❤️
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/laszlobeer)
 
 ---

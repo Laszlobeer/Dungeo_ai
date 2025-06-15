@@ -110,7 +110,18 @@ ROLE_STARTERS = {
         "Bard": "You're performing in a crowded tavern when",
         "Cleric": "You're tending to the sick in the temple when",
         "Assassin": "You're preparing for a contract in the shadows when",
-        "Paladin": "You're praying at the altar of your deity when"
+        "Paladin": "You're praying at the altar of your deity when",
+        "Alchemist": "You're carefully measuring reagents in your alchemy lab when",
+        "Druid": "You're communing with nature in the sacred grove when",
+        "Warlock": "You're negotiating with your otherworldly patron when",
+        "Monk": "You're meditating in the monastery courtyard when",
+        "Sorcerer": "You're struggling to control your innate magical powers when",
+        "Beastmaster": "You're training your animal companions in the forest clearing when",
+        "Enchanter": "You're imbuing magical properties into a mundane object when",
+        "Blacksmith": "You're forging a new weapon at your anvil when",
+        "Merchant": "You're haggling with customers at the marketplace when",
+        "Gladiator": "You're preparing for combat in the arena when",
+        "Wizard": "You're researching new spells in your arcane library when"
     },
     "Sci-Fi": {
         "Space Marine": "You're conducting patrol on a derelict space station when",
@@ -120,7 +131,18 @@ ROLE_STARTERS = {
         "Engineer": "You're repairing the FTL drive when",
         "Alien Diplomat": "You're negotiating with an alien delegation when",
         "Bounty Hunter": "You're tracking a target through a spaceport when",
-        "Starship Captain": "You're commanding the bridge during warp travel when"
+        "Starship Captain": "You're commanding the bridge during warp travel when",
+        "Space Pirate": "You're plotting your next raid from your starship's bridge when",
+        "Navigator": "You're charting a course through uncharted space when",
+        "Robot Technician": "You're repairing a malfunctioning android when",
+        "Cybernetic Soldier": "You're calibrating your combat implants when",
+        "Explorer": "You're scanning a newly discovered planet when",
+        "Astrobiologist": "You're studying alien life forms in your lab when",
+        "Quantum Hacker": "You're breaching a corporate firewall when",
+        "Galactic Trader": "You're negotiating a deal for rare resources when",
+        "AI Specialist": "You're debugging a sentient AI's personality matrix when",
+        "Terraformer": "You're monitoring atmospheric changes on a new colony world when",
+        "Cyberneticist": "You're installing neural enhancements in a patient when"
     },
     "Cyberpunk": {
         "Hacker": "You're infiltrating a corporate network when",
@@ -128,14 +150,25 @@ ROLE_STARTERS = {
         "Corporate Agent": "You're closing a deal in a high-rise office when",
         "Techie": "You're modifying cyberware in your workshop when",
         "Rebel Leader": "You're planning a raid on a corporate facility when",
-        "Cyborg": "You're calibrating your cybernetic enhancements when"
+        "Cyborg": "You're calibrating your cybernetic enhancements when",
+        "Drone Operator": "You're controlling surveillance drones from your command center when",
+        "Synth Dealer": "You're negotiating a deal for illegal cybernetics when",
+        "Information Courier": "You're delivering sensitive data through dangerous streets when",
+        "Augmentation Engineer": "You're installing cyberware in a back-alley clinic when",
+        "Black Market Dealer": "You're arranging contraband in your hidden shop when",
+        "Scumbag": "You're looking for an easy mark in the slums when",
+        "Police": "You're patrolling the neon-drenched streets when"
     },
     "Post-Apocalyptic": {
         "Survivor": "You're scavenging in the ruins of an old city when",
         "Scavenger": "You're searching a pre-collapse bunker when",
         "Raider": "You're ambushing a convoy in the wasteland when",
         "Medic": "You're treating radiation sickness in your clinic when",
-        "Cult Leader": "You're preaching to your followers at a ritual when"
+        "Cult Leader": "You're preaching to your followers at a ritual when",
+        "Mutant": "You're hiding your mutations in a settlement when",
+        "Trader": "You're bartering supplies at a wasteland outpost when",
+        "Berserker": "You're sharpening your weapons for the next raid when",
+        "Soldier": "You're guarding a settlement from raiders when"
     }
 }
 
@@ -405,20 +438,185 @@ def sanitize_response(response, censored=False):
     return response
 
 def process_narrative_command(user_input):
-    """Process narrative commands that bend the story"""
+    """Process narrative commands that bend the story and RPG actions"""
+    # Normalize the input for case-insensitive matching
+    normalized_input = user_input.strip().lower()
+    
+    # Comprehensive list of narrative triggers
     triggers = [
         "i bend the story to",
         "i reshape reality so that",
         "suddenly,",
         "miraculously,",
         "unexpectedly,",
-        "against all odds,"
+        "against all odds,",
+        "i command the story to",
+        "the story changes so that",
+        "i alter reality to",
+        "i rewrite the narrative so that",
+        "the narrative shifts to",
+        "the plot twists so that",
+        "i wish that",import random
+                continue
+
+            if cmd == "/change":
+                installed_models = get_installed_models()
+                if installed_models:
+                    print("Available models:")
+                    for idx, m in enumerate(installed_models, 1):
+                        print(f"{idx}: {m}")
+                    while True:
+                        choice = input("Enter number of new model: ").strip()
+                        if not choice:
+                            break
+                        try:
+                            idx = int(choice) - 1
+                            if 0 <= idx < len(installed_models):
+                                ollama_model = installed_models[idx]
+                                print(f"Model changed to: {ollama_model}")
+                                break
+                        except ValueError:
+                            pass
+                        print("Invalid selection. Please try again.")
+                else:
+                    print("No installed models found. Using current model.")
+                continue
+
+            if cmd == "/count":
+                try:
+                    arr_input = input("Enter integers separated by spaces: ").strip()
+                    k_input = input("Enter k value: ").strip()
+
+                    arr = list(map(int, arr_input.split()))
+                    k = int(k_input)
+
+                    result = count_subarrays(arr, k)
+                    print(f"Number of subarrays with at most {k} distinct elements: {result}")
+                except Exception as e:
+                    print(f"Error: {e}. Please enter valid integers.")
+                continue
+
+            # Process narrative commands
+            formatted_input = process_narrative_command(user_input)
+            
+            # Build conversation with current world state
+            state_context = get_current_state(player_choices)
+            full_conversation = (
+                f"{DM_SYSTEM_PROMPT}\n\n"
+                f"{conversation}\n"
+                f"{formatted_input}\n"
+                "Dungeon Master:"
+            )
+            
+            # Get AI response with state context
+            ai_reply = get_ai_response(full_conversation, ollama_model, censored)
+            
+            if ai_reply:
+                ai_reply = sanitize_response(ai_reply, censored)
+                print(f"\nDungeon Master: {ai_reply}")
+                speak(ai_reply)
+                
+                # Update conversation
+                conversation += f"\n{formatted_input}\nDungeon Master: {ai_reply}"
+                last_ai_reply = ai_reply
+                
+                # Update world state based on player action and consequence
+                update_world_state(user_input, ai_reply, player_choices)
+                
+                # Show immediate consequence
+                print(f"\n[Consequence of '{user_input}']")
+                print(f"- {ai_reply.split('.')[0]}")
+
+        except Exception as e:
+            logging.error(f"Unexpected error in main loop: {e}")
+            print("An unexpected error occurred. The adventure continues...")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        logging.critical(f"Critical error: {e}", exc_info=True)
+        print("A critical error occurred. Please check the log file for details.")
+
+        "i imagine that",
+        "i envision that",
+        "i create that",
+        "i manifest that",
+        "i conjure that",
+        "i decree that",
+        "i will that",
+        "it happens that",
+        "by magic,",
+        "by divine intervention,",
+        "through mystical means,",
+        "through technological manipulation,",
+        "by the power of imagination,",
+        "the universe bends to my will and",
+        "reality warps so that",
+        "the fabric of existence shifts and",
+        "time and space reconfigure so that",
+        "quantum fluctuations cause"
     ]
     
+    # Comprehensive list of RPG action verbs
+    action_verbs = [
+        "i say", "i do", "i search", "i make", "i cast", "i craft", 
+        "i use", "i attack", "i defend", "i move", "i take", "i grab",
+        "i drop", "i give", "i show", "i ask", "i tell", "i persuade",
+        "i intimidate", "i sneak", "i hide", "i climb", "i jump", "i open",
+        "i close", "i unlock", "i lock", "i push", "i pull", "i examine",
+        "i study", "i read", "i write", "i draw", "i sing", "i play",
+        "i build", "i repair", "i heal", "i pray", "i meditate", "i focus",
+        "i summon", "i banish", "i enchant", "i disarm", "i set", "i light",
+        "i extinguish", "i cook", "i eat", "i drink", "i wear", "i remove",
+        "i equip", "i unequip", "i buy", "i sell", "i trade", "i gamble",
+        "i negotiate", "i lie", "i truth", "i confess", "i accuse", "i challenge",
+        "i surrender", "i flee", "i follow", "i lead", "i track", "i hunt",
+        "i fish", "i forage", "i farm", "i mine", "i smith", "i alchemize",
+        "i brew", "i mix", "i combine", "i separate", "i solve", "i decipher",
+        "i translate", "i listen", "i smell", "i taste", "i touch", "i sense",
+        "i detect", "i scan", "i analyze", "i program", "i hack", "i decrypt",
+        "i pilot", "i drive", "i sail", "i fly", "i teleport", "i phase",
+        "i transform", "i shapeshift", "i possess", "i control", "i influence",
+        "i inspire", "i comfort", "i threaten", "i blackmail", "i bribe",
+        "i steal", "i pickpocket", "i assassinate", "i knockout", "i capture",
+        "i release", "i free", "i rescue", "i sacrifice", "i worship",
+        "i curse", "i bless", "i trap", "i ambush", "i scout", "i survey",
+        "i map", "i navigate", "i travel", "i rest", "i sleep", "i dream",
+        "i wake", "i prepare", "i ready", "i aim", "i shoot", "i throw",
+        "i catch", "i dodge", "i parry", "i block", "i counter", "i feint",
+        "i charge", "i retreat", "i command", "i obey", "i resist", "i yield",
+        "i bargain", "i invest", "i donate", "i steal", "i borrow", "i lend",
+        "i learn", "i teach", "i mentor", "i apprentice", "i research",
+        "i experiment", "i discover", "i invent", "i patent", "i copy",
+        "i destroy", "i preserve", "i protect", "i abandon", "i adopt",
+        "i tame", "i train", "i ride", "i feed", "i grow", "i plant",
+        "i harvest", "i collect", "i gather", "i purify", "i corrupt",
+        "i cleanse", "i infect", "i cure", "i diagnose", "i operate",
+        "i revive", "i resurrect", "i bury", "i mourn", "i celebrate",
+        "i toast", "i party", "i marry", "i divorce", "i befriend",
+        "i betray", "i forgive", "i avenge", "i apologize", "i insult",
+        "i compliment", "i flirt", "i seduce", "i marry", "i propose",
+        "i accept", "i reject", "i question", "i answer", "i guess",
+        "i know", "i remember", "i forget", "i remind", "i warn",
+        "i advise", "i suggest", "i recommend", "i insist", "i demand",
+        "i request", "i offer", "i promise", "i swear", "i vow",
+        "i hope", "i fear", "i love", "i hate", "i envy", "i admire",
+        "i trust", "i distrust", "i doubt", "i believe", "i worship",
+        "i blaspheme", "i convert", "i preach", "i prophesy", "i divine"
+    ]
+    
+    # Check if input starts with any narrative trigger
     for trigger in triggers:
-        if user_input.lower().startswith(trigger):
+        if normalized_input.startswith(trigger):
             return f"Player (narrative command): {user_input}"
     
+    # Check if input starts with any RPG action verb
+    for verb in action_verbs:
+        if normalized_input.startswith(verb):
+            return f"Player (action): {user_input}"
+    
+    # Default case for regular input
     return f"Player: {user_input}"
 
 def update_world_state(action, response, player_choices):
@@ -456,10 +654,6 @@ def update_world_state(action, response, player_choices):
     world_event_matches = re.findall(r'(?:The|A) (\w+ \w+) (?:is|has been) (destroyed|created|changed|revealed)', response, re.IGNORECASE)
     for location, event in world_event_matches:
         player_choices['world_events'].append(f"{location} {event}")
-
-def enhance_player_action(user_input):
-    """Add context to ensure actions have consequences"""
-    return f"{user_input} [System: Describe immediate consequence first]"
 
 def main():
     global ollama_model, BANWORDS
@@ -712,7 +906,7 @@ def main():
                     print(f"Error: {e}. Please enter valid integers.")
                 continue
 
-            # Process narrative commands
+            # Process narrative commands and RPG actions
             formatted_input = process_narrative_command(user_input)
             
             # Build conversation with current world state

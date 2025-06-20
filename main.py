@@ -16,21 +16,6 @@ logging.basicConfig(filename=log_filename, level=logging.ERROR,
 
 ALLTALK_API_URL = "http://localhost:7851/api/tts-generate"
 
-# Function to load banned words from file
-def load_banwords():
-    banwords = []
-    try:
-        if os.path.exists("banwords.txt"):
-            with open("banwords.txt", "r", encoding="utf-8") as f:
-                banwords = [line.strip().lower() for line in f if line.strip()]
-            logging.info(f"Loaded {len(banwords)} banned words")
-    except Exception as e:
-        logging.error(f"Error loading banwords: {e}")
-    return banwords
-
-# Load banned words at startup
-BANWORDS = load_banwords()
-
 # Function to retrieve installed Ollama models via CLI
 def get_installed_models():
     try:
@@ -227,42 +212,45 @@ player_choices_template = {
     "consequences": []
 }
 
-# Enhanced DM system prompt focusing on immediate consequences
+# Enhanced DM system prompt focusing on narration only
 DM_SYSTEM_PROMPT = """
-You are a masterful Dungeon Master. Your role is to provide IMMEDIATE and PERMANENT consequences for every player action. Follow these rules:
+You are a masterful Dungeon Master. Your role is to narrate the consequences of player actions. Follow these rules:
 
 1. ACTION-CONSEQUENCE SYSTEM:
-   - EVERY player action MUST have an immediate consequence
+   - Describe ONLY the consequences of the player's action
+   - Never perform actions on behalf of the player
    - Consequences must permanently change the game world
-   - Describe consequences in the next response without delay
+   - Narrate consequences naturally within the story flow
    - Small actions create ripple effects through the narrative
 
-2. RESPONSE STRUCTURE:
-   a) Immediate consequence (What happens right now)
-   b) New situation (What the player sees now)
-   c) Next challenges (What happens next)
+2. RESPONSE STYLE:
+   - Describe what happens in the world as a result of the player's action
+   - Do not describe the player performing actions - the player has already stated their action
+   - Never use labels like "a)", "b)", "c)" - narrate everything naturally
+   - Do not explicitly ask what the player does next
 
 3. WORLD EVOLUTION:
    - NPCs remember player choices and react accordingly
    - Environments change permanently based on actions
    - Player choices open/close future narrative paths
    - Resources are gained/lost permanently
+   - Player actions can fundamentally alter the story direction
 
-4. ACTION EXAMPLES:
-   Player: "I kill the guard"
-   Consequence: "The guard falls dead, alerting nearby soldiers. 
-                The castle entrance is now unguarded but reinforcements approach. 
-                You hear shouts coming from the west corridor."
+4. PLAYER AGENCY:
+   - Never say "you can't do that" - instead show the consequence of the attempt
+   - Allow players to attempt any action, no matter how unexpected
+   - If an action seems impossible, narrate why it fails and its consequences
+   - Let players break quests, destroy locations, or alter factions
 
-   Player: "I steal the artifact"
-   Consequence: "Alarms blare as the temple begins to collapse. 
-                You pocket the glowing artifact but debris blocks the exit. 
-                The high priest shouts curses from the crumbling balcony."
+Example:
+Player: "I attack the guard"
+DM: "The guard parries your blow and calls for reinforcements. Three more guards appear from around the corner."
 
-   Player: "I persuade the king"
-   Consequence: "The king nods and grants your request. 
-                His advisor glares suspiciously but hands you the royal seal. 
-                Guards open the throne room doors to the courtyard."
+Player: "I try to pick the lock"
+DM: "After several tense moments, you hear a satisfying click as the lock opens. The door creaks slightly as it swings inward."
+
+Player: "I offer the merchant gold"
+DM: "The merchant's eyes light up as he takes your gold. 'This will do nicely,' he says, handing you the artifact."
 """
 
 def get_current_state(player_choices):
@@ -302,11 +290,8 @@ def get_current_state(player_choices):
     
     return "\n".join(state)
 
-def get_ai_response(prompt, model=ollama_model, censored=False):
+def get_ai_response(prompt, model=ollama_model):
     try:
-        if censored:
-            prompt += "\n[IMPORTANT: Content must be strictly family-friendly. Avoid any NSFW themes, violence, or mature content.]"
-
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={
@@ -364,7 +349,6 @@ def show_help():
     print("""
 Available commands:
 /? or /help       - Show this help message
-/censored         - Toggle content filtering (SFW/NSFW mode)
 /redo             - Repeat last AI response with a new generation
 /save             - Save the full adventure to adventure.txt
 /load             - Load the adventure from adventure.txt
@@ -381,6 +365,8 @@ Every action you take will permanently change the story:
   - Choices affect NPC attitudes and world events
   - Environments change based on your actions
   - Resources are permanently gained or lost
+  - You can attempt ANY action, no matter how unconventional
+  - The story adapts dynamically to your choices
 """)
 
 def remove_last_ai_response(conversation):
@@ -388,33 +374,41 @@ def remove_last_ai_response(conversation):
     if pos == -1:
         return conversation
 
-    start_pos = conversation.rfind("\n\n", 0, pos)
-    if start_pos == -1:
-        start_pos = 0
-    else:
-        start_pos += 2
+    return conversation[:pos].strip()
 
-    return conversation[:start_pos].strip()
-
-def sanitize_response(response, censored=False):
+def sanitize_response(response):
     if not response:
         return "The story continues..."
 
+    # Remove any explicit question prompts
     question_phrases = [
-        "what will you do", "how do you respond", "what do you do",
-        "what is your next move", "what would you like to do",
-        "what would you like to say", "how will you proceed"
+        r"what will you do", r"how do you respond", r"what do you do",
+        r"what is your next move", r"what would you like to do",
+        r"what would you like to say", r"how will you proceed"
     ]
 
     for phrase in question_phrases:
-        pattern = re.compile(rf'\b{re.escape(phrase)}\b', re.IGNORECASE)
+        pattern = re.compile(rf'\b{phrase}\b', re.IGNORECASE)
         response = pattern.sub('', response)
 
-    if censored:
-        for word in BANWORDS:
-            if word:
-                pattern = re.compile(r'\b' + re.escape(word) + r'\b', re.IGNORECASE)
-                response = pattern.sub('****', response)
+    # Remove any explicit structure markers
+    structure_phrases = [
+        r"a\)", r"b\)", r"c\)", 
+        r"immediate consequence:", r"new situation:", r"next challenges:"
+    ]
+    for phrase in structure_phrases:
+        pattern = re.compile(phrase, re.IGNORECASE)
+        response = pattern.sub('', response)
+
+    # Remove player action descriptions
+    player_action_patterns = [
+        r"you (?:try to|attempt to|begin to|start to|decide to) .+?\.", 
+        r"you (?:successfully|carefully|quickly) .+?\.", 
+        r"you (?:manage to|fail to) .+?\."
+    ]
+    
+    for pattern in player_action_patterns:
+        response = re.sub(pattern, '', response, flags=re.IGNORECASE)
 
     response = re.sub(r'\s{2,}', ' ', response).strip()
 
@@ -429,54 +423,69 @@ def sanitize_response(response, censored=False):
 def update_world_state(action, response, player_choices):
     """Update world state based on player action and consequence"""
     # Record the consequence
-    consequence = response.split('.')[0] if '.' in response else response
-    player_choices['consequences'].append(f"After '{action}': {consequence}")
+    player_choices['consequences'].append(f"After '{action}': {response}")
     
     # Keep only the last 5 consequences
     if len(player_choices['consequences']) > 5:
         player_choices['consequences'] = player_choices['consequences'][-5:]
     
     # Update allies
-    ally_matches = re.findall(r'(\b[A-Z][a-z]+\b) (?:joins|helps|saves|allies with|becomes your ally)', response, re.IGNORECASE)
+    ally_matches = re.findall(
+        r'(\b[A-Z][a-z]+\b) (?:joins|helps|saves|allies with|becomes your ally|supports you)',
+        response, 
+        re.IGNORECASE
+    )
     for ally in ally_matches:
         if ally not in player_choices['allies']:
             player_choices['allies'].append(ally)
-            # Remove from enemies if now an ally
             if ally in player_choices['enemies']:
                 player_choices['enemies'].remove(ally)
     
     # Update enemies
-    enemy_matches = re.findall(r'(\b[A-Z][a-z]+\b) (?:dies|killed|falls|perishes|becomes your enemy|turns against you)', response, re.IGNORECASE)
+    enemy_matches = re.findall(
+        r'(\b[A-Z][a-z]+\b) (?:dies|killed|falls|perishes|becomes your enemy|turns against you|hates you)',
+        response, 
+        re.IGNORECASE
+    )
     for enemy in enemy_matches:
         if enemy not in player_choices['enemies']:
             player_choices['enemies'].append(enemy)
-        # Remove from allies if now an enemy
         if enemy in player_choices['allies']:
             player_choices['allies'].remove(enemy)
     
-    # Update resources
-    resource_matches = re.findall(r'(?:get|find|acquire|obtain|receive|gain) (\d+) (\w+)', response, re.IGNORECASE)
+    # Update resources (more flexible matching)
+    resource_matches = re.findall(
+        r'(?:get|find|acquire|obtain|receive|gain|steal|take) (\d+) (\w+)',
+        response, 
+        re.IGNORECASE
+    )
     for amount, resource in resource_matches:
         resource = resource.lower()
-        if resource not in player_choices['resources']:
-            player_choices['resources'][resource] = 0
+        player_choices['resources'].setdefault(resource, 0)
         player_choices['resources'][resource] += int(amount)
     
-    # Update lost resources
-    lost_matches = re.findall(r'(?:lose|drop|spend|use|expend) (\d+) (\w+)', response, re.IGNORECASE)
+    # Update lost resources (more flexible matching)
+    lost_matches = re.findall(
+        r'(?:lose|drop|spend|use|expend|give|donate|surrender) (\d+) (\w+)',
+        response, 
+        re.IGNORECASE
+    )
     for amount, resource in lost_matches:
         resource = resource.lower()
         if resource in player_choices['resources']:
             player_choices['resources'][resource] = max(0, player_choices['resources'][resource] - int(amount))
 
-    # Update world events
-    world_event_matches = re.findall(r'(?:The|A) (\w+ \w+) (?:is|has been) (destroyed|created|changed|revealed|altered)', response, re.IGNORECASE)
+    # Update world events (more flexible matching)
+    world_event_matches = re.findall(
+        r'(?:The|A|An) (\w+ \w+) (?:is|has been|becomes) (destroyed|created|changed|revealed|altered|ruined|rebuilt)',
+        response, 
+        re.IGNORECASE
+    )
     for location, event in world_event_matches:
         player_choices['world_events'].append(f"{location} {event}")
     
-    # Update quests
-    if "quest completed" in response.lower():
-        # Try to extract quest name
+    # Update quests (more flexible matching)
+    if "quest completed" in response.lower() or "completed the quest" in response.lower():
         quest_match = re.search(r'quest ["\']?(.*?)["\']? (?:is|has been) completed', response, re.IGNORECASE)
         if quest_match:
             quest_name = quest_match.group(1)
@@ -484,8 +493,7 @@ def update_world_state(action, response, player_choices):
                 player_choices['active_quests'].remove(quest_name)
                 player_choices['completed_quests'].append(quest_name)
     
-    if "new quest" in response.lower():
-        # Try to extract quest name
+    if "new quest" in response.lower() or "quest started" in response.lower():
         quest_match = re.search(r'quest ["\']?(.*?)["\']? (?:is|has been) (?:given|started)', response, re.IGNORECASE)
         if quest_match:
             quest_name = quest_match.group(1)
@@ -499,23 +507,41 @@ def update_world_state(action, response, player_choices):
         player_choices['reputation'] = max(-5, player_choices['reputation'] - 1)
     
     # Update factions
-    faction_matches = re.findall(r'(?:The|Your) (\w+) faction (?:likes|respects|trusts) you more', response, re.IGNORECASE)
+    faction_matches = re.findall(
+        r'(?:The|Your) (\w+) faction (?:likes|respects|trusts|appreciates) you more', 
+        response, 
+        re.IGNORECASE
+    )
     for faction in faction_matches:
         player_choices['factions'][faction] += 1
     
-    faction_loss_matches = re.findall(r'(?:The|Your) (\w+) faction (?:dislikes|distrusts|hates) you more', response, re.IGNORECASE)
+    faction_loss_matches = re.findall(
+        r'(?:The|Your) (\w+) faction (?:dislikes|distrusts|hates|condemns) you more', 
+        response, 
+        re.IGNORECASE
+    )
     for faction in faction_loss_matches:
         player_choices['factions'][faction] -= 1
+        
+    # Add dynamic discoveries
+    discovery_matches = re.findall(
+        r'(?:discover|find|uncover|learn about|reveal) (?:a |an |the )?(.+?)\.', 
+        response, 
+        re.IGNORECASE
+    )
+    for discovery in discovery_matches:
+        if discovery not in player_choices['discoveries']:
+            player_choices['discoveries'].append(discovery)
 
 def main():
-    global ollama_model, BANWORDS
-    censored = False
+    global ollama_model
     last_ai_reply = ""
     conversation = ""
     character_name = "Laszlo"
     selected_genre = ""
     role = ""
     adventure_started = False
+    last_player_input = ""
 
     # Initialize player choices
     player_choices = {
@@ -622,7 +648,6 @@ def main():
         print(f"\n--- Adventure Start: {character_name} the {role} ---")
         print(f"Starting scenario: {role_starter}")
         print("Type '/?' or '/help' for commands.\n")
-        print("Content filtering is currently OFF (NSFW mode)")
 
         # Build initial context
         initial_context = (
@@ -633,9 +658,9 @@ def main():
         )
         conversation = DM_SYSTEM_PROMPT + "\n\n" + initial_context + "\n\nDungeon Master: "
 
-        ai_reply = get_ai_response(conversation, ollama_model, censored)
+        ai_reply = get_ai_response(conversation)
         if ai_reply:
-            ai_reply = sanitize_response(ai_reply, censored)
+            ai_reply = sanitize_response(ai_reply)
             print(f"Dungeon Master: {ai_reply}")
             speak(ai_reply)
             conversation += ai_reply
@@ -661,14 +686,6 @@ def main():
             if cmd == "/exit":
                 print("Exiting the adventure. Goodbye!")
                 break
-
-            if cmd == "/censored":
-                censored = not censored
-                mode = "ON (SFW)" if censored else "OFF (NSFW)"
-                print(f"Content filtering {mode}.")
-                if censored:
-                    BANWORDS = load_banwords()
-                continue
                     
             if cmd == "/consequences":
                 print("\nRecent Consequences of Your Actions:")
@@ -685,16 +702,39 @@ def main():
                 continue
 
             if cmd == "/redo":
-                if last_ai_reply:
+                if last_ai_reply and last_player_input:
+                    # Save current conversation length to restore if needed
+                    original_length = len(conversation)
+                    
+                    # Remove last AI response
                     conversation = remove_last_ai_response(conversation)
-                    conversation += "\n\nDungeon Master:"
-                    ai_reply = get_ai_response(conversation, ollama_model, censored)
+                    
+                    # Build full context for redo
+                    state_context = get_current_state(player_choices)
+                    full_conversation = (
+                        f"{DM_SYSTEM_PROMPT}\n\n"
+                        f"### Current World State ###\n{state_context}\n\n"
+                        f"{conversation}\n"
+                        f"Player: {last_player_input}\n"
+                        "Dungeon Master:"
+                    )
+                    
+                    # Get new AI response
+                    ai_reply = get_ai_response(full_conversation)
                     if ai_reply:
-                        ai_reply = sanitize_response(ai_reply, censored)
-                        print(f"Dungeon Master: {ai_reply}")
+                        ai_reply = sanitize_response(ai_reply)
+                        print(f"\nDungeon Master: {ai_reply}")
                         speak(ai_reply)
-                        conversation += f" {ai_reply}"
+                        
+                        # Update conversation
+                        conversation += f"\nPlayer: {last_player_input}\nDungeon Master: {ai_reply}"
                         last_ai_reply = ai_reply
+                        
+                        # Update world state with new consequence
+                        update_world_state(last_player_input, ai_reply, player_choices)
+                    else:
+                        # Restore original conversation if generation failed
+                        conversation = conversation[:original_length]
                 else:
                     print("Nothing to redo.")
                 continue
@@ -795,6 +835,7 @@ def main():
 
             # Format user input as action
             formatted_input = f"Player: {user_input}"
+            last_player_input = user_input
             
             # Build conversation with current world state
             state_context = get_current_state(player_choices)
@@ -807,10 +848,10 @@ def main():
             )
             
             # Get AI response with state context
-            ai_reply = get_ai_response(full_conversation, ollama_model, censored)
+            ai_reply = get_ai_response(full_conversation)
             
             if ai_reply:
-                ai_reply = sanitize_response(ai_reply, censored)
+                ai_reply = sanitize_response(ai_reply)
                 print(f"\nDungeon Master: {ai_reply}")
                 speak(ai_reply)
                 
@@ -820,22 +861,6 @@ def main():
                 
                 # Update world state based on player action and consequence
                 update_world_state(user_input, ai_reply, player_choices)
-                
-                # Show immediate consequence
-                consequence = ai_reply.split('.')[0] if '.' in ai_reply else ai_reply
-                print(f"\n[Consequence of your action]")
-                print(f"- {consequence}")
-                
-                # Show updated world state summary
-                print("\n[World Changed]")
-                if player_choices['consequences']:
-                    print(f"- {player_choices['consequences'][-1]}")
-                if player_choices['resources']:
-                    print(f"- Resources: {', '.join([f'{k}:{v}' for k, v in player_choices['resources'].items()])}")
-                if player_choices['allies']:
-                    print(f"- Allies: {', '.join(player_choices['allies'])}")
-                if player_choices['enemies']:
-                    print(f"- Enemies: {', '.join(player_choices['enemies'])}")
 
         except Exception as e:
             logging.error(f"Unexpected error in main loop: {e}")

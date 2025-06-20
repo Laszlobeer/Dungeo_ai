@@ -384,17 +384,19 @@ def sanitize_response(response):
     question_phrases = [
         r"what will you do", r"how do you respond", r"what do you do",
         r"what is your next move", r"what would you like to do",
-        r"what would you like to say", r"how will you proceed"
+        r"what would you like to say", r"how will you proceed",
+        r"do you:", r"choose one", r"select an option", r"pick one"
     ]
 
     for phrase in question_phrases:
-        pattern = re.compile(rf'\b{phrase}\b', re.IGNORECASE)
+        pattern = re.compile(rf'{phrase}.*?$', re.IGNORECASE)
         response = pattern.sub('', response)
 
     # Remove any explicit structure markers
     structure_phrases = [
-        r"a\)", r"b\)", r"c\)", 
-        r"immediate consequence:", r"new situation:", r"next challenges:"
+        r"a\)", r"b\)", r"c\)", r"d\)", r"e\)", r"option [a-e]:",
+        r"immediate consequence:", r"new situation:", r"next challenges:",
+        r"choices:", r"options:"
     ]
     for phrase in structure_phrases:
         pattern = re.compile(phrase, re.IGNORECASE)
@@ -410,11 +412,29 @@ def sanitize_response(response):
     for pattern in player_action_patterns:
         response = re.sub(pattern, '', response, flags=re.IGNORECASE)
 
+    # Remove multiple-choice blocks
+    response = re.sub(
+        r'(?:\n|\. )?[A-Ea-e]\)[^\.\?\!\n]*(\n|\. |$)', 
+        '', 
+        response,
+        flags=re.IGNORECASE
+    )
+    
+    # Remove "something else" options
+    response = re.sub(
+        r'(?:something else|other) \(.*?\)', 
+        '', 
+        response, 
+        flags=re.IGNORECASE
+    )
+
+    # Clean up extra spaces
     response = re.sub(r'\s{2,}', ' ', response).strip()
 
+    # Ensure proper punctuation
     if response and response[-1] not in ('.', '!', '?', ':', ','):
         response += '.'
-
+    
     # Remove state tracking markers if any
     response = re.sub(r'\[[^\]]*State Tracking[^\]]*\]', '', response)
     

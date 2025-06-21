@@ -129,4 +129,3 @@ Your support helps me continue building awesome open-source tools. ❤️
 
 ---
 
-Let me know if you'd like me to generate a `README.md` file directly or help you version this for multiple languages or GitHub Pages!

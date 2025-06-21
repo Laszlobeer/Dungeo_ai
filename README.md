@@ -1,4 +1,4 @@
-Here's an updated and polished version of your `README.md` that includes explanations of the new files like `funnymain.py` and `seriousmain.py`, along with some grammar and structure improvements throughout for clarity and professionalism:
+
 
 ---
 

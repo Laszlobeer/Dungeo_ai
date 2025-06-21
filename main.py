@@ -15,6 +15,7 @@ logging.basicConfig(filename=log_filename, level=logging.ERROR,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 ALLTALK_API_URL = "http://localhost:7851/api/tts-generate"
+MAX_CONTEXT_TOKENS = 6000  # Target context length
 
 # Function to retrieve installed Ollama models via CLI
 def get_installed_models():
@@ -55,6 +56,10 @@ def count_subarrays(arr, k):
         total += (right - left + 1)
 
     return total
+
+# Approximate token count (1 token ~ 4 characters in English)
+def count_tokens(text):
+    return len(text) // 4
 
 # Initial model selection
 installed_models = get_installed_models()
@@ -300,7 +305,6 @@ def get_ai_response(prompt, model=ollama_model):
                 "stream": False,
                 "options": {
                     "temperature": 0.7,
-                    "num_predict": 250,
                     "stop": ["\n\n"],
                     "min_p": 0.05,
                     "top_k": 40
@@ -676,9 +680,9 @@ def main():
             f"Player Character: {character_name} the {role}\n"
             f"Starting Scenario: {role_starter}\n"
         )
-        conversation = DM_SYSTEM_PROMPT + "\n\n" + initial_context + "\n\nDungeon Master: "
+        conversation = initial_context + "\n\nDungeon Master: "
 
-        ai_reply = get_ai_response(conversation)
+        ai_reply = get_ai_response(DM_SYSTEM_PROMPT + "\n\n" + conversation)
         if ai_reply:
             ai_reply = sanitize_response(ai_reply)
             print(f"Dungeon Master: {ai_reply}")
@@ -857,15 +861,71 @@ def main():
             formatted_input = f"Player: {user_input}"
             last_player_input = user_input
             
-            # Build conversation with current world state
+            # Build base prompt components
             state_context = get_current_state(player_choices)
-            full_conversation = (
+            base_prompt = (
                 f"{DM_SYSTEM_PROMPT}\n\n"
                 f"### Current World State ###\n{state_context}\n\n"
-                f"{conversation}\n"
-                f"{formatted_input}\n"
-                "Dungeon Master:"
             )
+            variable_part = f"{conversation}\n{formatted_input}\nDungeon Master:"
+            
+            # Calculate token count
+            tokens = count_tokens(base_prompt + variable_part)
+            
+            # Truncate conversation if needed while preserving key elements
+            if tokens > MAX_CONTEXT_TOKENS:
+                # Find important sections to preserve
+                preserve_sections = []
+                
+                # Preserve character setup
+                if "Adventure Setting" in conversation:
+                    start_idx = conversation.find("### Adventure Setting ###")
+                    end_idx = conversation.find("\n\n", start_idx)
+                    if end_idx == -1:
+                        end_idx = len(conversation)
+                    preserve_sections.append(conversation[start_idx:end_idx])
+                
+                # Preserve recent consequences (last 3)
+                if "Recent Consequences:" in state_context:
+                    start_idx = state_context.find("Recent Consequences:")
+                    preserve_sections.append(state_context[start_idx:])
+                
+                # Preserve world state summary
+                if "Current World State" in state_context:
+                    start_idx = state_context.find("### Current World State ###")
+                    preserve_sections.append(state_context[start_idx:])
+                
+                # Preserve last 2 interactions
+                last_interactions = []
+                dm_occurrences = [m.start() for m in re.finditer(r'Dungeon Master:', conversation)]
+                if len(dm_occurrences) > 2:
+                    # Get position of third-to-last DM response
+                    start_idx = dm_occurrences[-3]
+                    last_interactions.append(conversation[start_idx:])
+                
+                # Rebuild conversation with preserved sections
+                new_conversation = "\n\n".join(preserve_sections + last_interactions)
+                
+                # Calculate new token count
+                new_variable_part = f"{new_conversation}\n{formatted_input}\nDungeon Master:"
+                new_tokens = count_tokens(base_prompt + new_variable_part)
+                
+                # If still too long, do more aggressive truncation
+                if new_tokens > MAX_CONTEXT_TOKENS:
+                    # Remove oldest consequences but keep summary
+                    if "Recent Consequences:" in new_conversation:
+                        new_conversation = re.sub(
+                            r'Recent Consequences:.*?(- .*?)(?:\n\n|$)',
+                            'Recent Consequences:\n  - ... (older consequences truncated)',
+                            new_conversation,
+                            flags=re.DOTALL
+                        )
+                
+                conversation = new_conversation
+                variable_part = f"{conversation}\n{formatted_input}\nDungeon Master:"
+                print(f"\n[Context truncated to maintain performance. Current tokens: {count_tokens(base_prompt + variable_part)}]")
+            
+            full_conversation = base_prompt + variable_part
             
             # Get AI response with state context
             ai_reply = get_ai_response(full_conversation)

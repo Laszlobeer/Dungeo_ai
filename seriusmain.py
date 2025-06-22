@@ -160,7 +160,6 @@ ROLE_STARTERS = {
         "Berserker": "You're sharpening your weapons for the next raid when",
         "Soldier": "You're guarding a settlement from raiders when"
     },
-
     "1880": {
         "Thief": "You're lurking in the shadows of the city alleyways when",
         "Beggar": "You're sitting on the cold street corner with your cup when",
@@ -223,6 +222,165 @@ ROLE_STARTERS = {
         "Politician": "You're giving a fiery speech at the National Assembly when"
     }
 }
+
+# Role capabilities mapping
+ROLE_CAPABILITIES = {
+    # Fantasy roles
+    "Peasant": ["farm", "manual labor", "basic survival"],
+    "Noble": ["diplomacy", "leadership", "basic swordsmanship"],
+    "Mage": ["cast spells", "magic knowledge", "arcane research"],
+    "Knight": ["combat", "heavy armor", "leadership"],
+    "Ranger": ["archery", "tracking", "wilderness survival"],
+    "Thief": ["stealth", "lockpicking", "pickpocketing"],
+    "Bard": ["music", "storytelling", "persuasion"],
+    "Cleric": ["divine magic", "healing", "faith"],
+    "Assassin": ["stealth", "poisons", "lethal combat"],
+    "Paladin": ["divine magic", "combat", "leadership"],
+    "Alchemist": ["potion brewing", "chemistry", "herbalism"],
+    "Druid": ["nature magic", "shapeshifting", "animal communication"],
+    "Warlock": ["eldritch magic", "pact magic", "dark knowledge"],
+    "Monk": ["martial arts", "meditation", "discipline"],
+    "Sorcerer": ["innate magic", "elemental control", "raw power"],
+    "Beastmaster": ["animal handling", "companion control", "nature lore"],
+    "Enchanter": ["item enchantment", "rune magic", "artifice"],
+    "Blacksmith": ["weapon forging", "armor crafting", "metalworking"],
+    "Merchant": ["bartering", "appraisal", "networking"],
+    "Gladiator": ["arena combat", "showmanship", "endurance"],
+    "Wizard": ["scholarly magic", "spell research", "ritual casting"],
+    
+    # Sci-Fi roles
+    "Space Marine": ["heavy weapons", "combat", "tactics"],
+    "Scientist": ["research", "analysis", "technology"],
+    "Android": ["data processing", "system diagnostics", "enhanced strength"],
+    "Pilot": ["starship operation", "navigation", "evasive maneuvers"],
+    "Engineer": ["system repair", "mechanics", "technology"],
+    "Alien Diplomat": ["diplomacy", "xenolinguistics", "intercultural relations"],
+    "Bounty Hunter": ["tracking", "combat", "investigation"],
+    "Starship Captain": ["leadership", "tactics", "command"],
+    "Space Pirate": ["combat", "piloting", "smuggling"],
+    "Navigator": ["astrogation", "charting", "stellar phenomena"],
+    "Robot Technician": ["robotics", "repair", "programming"],
+    "Cybernetic Soldier": ["enhanced combat", "tactical analysis", "weapon systems"],
+    "Explorer": ["planetary survey", "survival", "discovery"],
+    "Astrobiologist": ["alien biology", "xenology", "specimen analysis"],
+    "Quantum Hacker": ["cybersecurity", "system intrusion", "data theft"],
+    "Galactic Trader": ["commerce", "negotiation", "market analysis"],
+    "AI Specialist": ["artificial intelligence", "programming", "system design"],
+    "Terraformer": ["planetary engineering", "ecology", "atmospheric science"],
+    "Cyberneticist": ["cybernetics", "neural implants", "body modification"],
+    
+    # Cyberpunk roles
+    "Hacker": ["system intrusion", "cybersecurity", "data theft"],
+    "Street Samurai": ["combat", "weapons mastery", "urban survival"],
+    "Corporate Agent": ["espionage", "negotiation", "corporate politics"],
+    "Techie": ["electronics", "gadgetry", "repair"],
+    "Rebel Leader": ["leadership", "guerrilla tactics", "revolution"],
+    "Cyborg": ["enhanced combat", "cybernetic abilities", "system integration"],
+    "Drone Operator": ["drone control", "surveillance", "remote operations"],
+    "Synth Dealer": ["black market", "negotiation", "cybernetics"],
+    "Information Courier": ["stealth", "evasion", "data security"],
+    "Augmentation Engineer": ["cybernetics", "surgery", "body modification"],
+    "Black Market Dealer": ["illicit trade", "negotiation", "underworld contacts"],
+    "Scumbag": ["street smarts", "scams", "petty theft"],
+    "Police": ["law enforcement", "combat", "investigation"],
+    
+    # Post-Apocalyptic roles
+    "Survivor": ["scavenging", "basic survival", "resourcefulness"],
+    "Scavenger": ["salvage", "trapping", "wasteland navigation"],
+    "Mutant": ["mutant abilities", "wasteland survival", "radiation resistance"],
+    "Trader": ["bartering", "appraisal", "caravan management"],
+    "Raider": ["combat", "ambush tactics", "intimidation"],
+    "Medic": ["field medicine", "herbal remedies", "trauma care"],
+    "Cult Leader": ["persuasion", "rituals", "community control"],
+    "Berserker": ["frenzy combat", "pain resistance", "intimidation"],
+    "Soldier": ["combat", "tactics", "defense strategies"]
+    
+      # 1880 roles
+    "Thief": ["pickpocketing", "lockpicking", "stealth"],
+    "Beggar": ["panhandling", "blending in", "street smarts"],
+    "Detective": ["investigation", "deduction", "interrogation"],
+    "Rich Man": ["influence", "wealth management", "high society"],
+    "Factory Worker": ["manual labor", "machine operation", "endurance"],
+    "Child": ["innocence", "small size", "escaping notice"],
+    "Orphan": ["street survival", "thievery", "hiding"],
+    "Murderer": ["stealth kills", "knife fighting", "disguise"],
+    "Butcher": ["meat cutting", "animal anatomy", "strength"],
+    "Baker": ["baking", "early rising", "customer service"],
+    "Banker": ["finance", "accounting", "persuasion"],
+    "Policeman": ["law enforcement", "beat patrol", "basic combat"],
+    
+        # WW1 roles
+    "Soldier (French)": ["trench warfare", "rifle shooting", "endurance", "bayonet fighting", "night patrols"],
+    "Soldier (English)": ["marksmanship", "bayonet combat", "discipline", "trench raiding", "grenade throwing"],
+    "Soldier (Russian)": ["close combat", "endurance", "improvised weapons", "survival in harsh conditions"],
+    "Soldier (Italian)": ["mountain warfare", "alpine survival", "ski combat", "rock climbing"],
+    "Soldier (USA)": ["marksmanship", "rapid deployment", "combat engineering", "trench clearing"],
+    "Soldier (Japanese)": ["stealth tactics", "night operations", "hand-to-hand combat", "bushido code"],
+    "Soldier (German)": ["machine gun operation", "tactical defense", "gas warfare", "stormtrooper tactics"],
+    "Soldier (Austrian)": ["artillery spotting", "mountain defense", "cavalry tactics", "multi-lingual communication"],
+    "Soldier (Bulgarian)": ["guerrilla warfare", "ambush tactics", "endurance", "terrain advantage utilization"],
+    "Civilian": ["rationing", "black market trading", "survival", "first aid", "information gathering"],
+    "Resistance Fighter": ["sabotage", "covert operations", "intelligence gathering", "explosives", "escape routes"]
+    
+    # 1925 roles
+    "Mafia Boss": ["intimidation", "organization", "illicit deals", "charisma"],
+    "Drunk": ["holding liquor", "bar fighting", "street smarts"],
+    "Police Officer": ["bribery", "firearms", "investigation"],
+    "Detective": ["forensics", "interrogation", "undercover work"],
+    "Factory Worker": ["assembly line", "union organizing", "mechanical"],
+    "Bootlegger": ["smuggling", "distilling", "evading police"],
+    
+    # Roman Empire roles
+    "Slave": ["hard labor", "obedience", "endurance", "invisibility", "secret communication"],
+    "Gladiator": ["arena combat", "weapons mastery", "showmanship", "survival", "crowd manipulation"],
+    "Beggar": ["panhandling", "disease resistance", "street survival", "information gathering", "blending in"],
+    "Senator": ["political maneuvering", "oratory", "bribery", "intrigue", "alliance building"],
+    "Imperator": ["military command", "strategy", "leadership", "diplomacy", "divine authority"],
+    "Soldier": ["formation fighting", "shield wall", "marching endurance", "siege warfare", "discipline"],
+    "Noble": ["wealth management", "political influence", "luxury", "estate management", "conspiracy"],
+    "Trader": ["haggling", "multilingual", "navigation", "appraisal", "smuggling"],
+    "Peasant": ["farming", "animal husbandry", "endurance", "traditional remedies", "weather prediction"],
+    "Priest": ["religious rites", "divination", "healing", "oracle interpretation", "temple management"],
+    "Barbarian": ["berserker rage", "axe fighting", "raiding tactics", "wilderness survival", "intimidation"],
+    "Philosopher": ["logic", "debate", "teaching", "writing", "critical thinking"],
+    "Mathematician": ["calculation", "engineering", "astronomy", "invention", "architecture"],
+    "Semi-God": ["divine powers", "heroic strength", "inspiration", "healing", "prophecy"]
+    
+    # French Revolution roles
+    "Peasant": ["mob tactics", "farming", "revolutionary fervor", "street fighting", "barricade building"],
+    "King": ["royal command", "political maneuvering", "luxury", "diplomacy", "escape planning"],
+    "Noble": ["etiquette", "wealth management", "intrigue", "foreign connections", "disguise"],
+    "Beggar": ["street survival", "information gathering", "blending in", "disease resistance", "theft"],
+    "Soldier": ["drill discipline", "musketry", "bayonet combat", "formation fighting", "loyalty switching"],
+    "General": ["military strategy", "troop command", "logistics", "fortification", "political survival"],
+    "Resistance": ["underground networks", "propaganda", "sabotage", "recruitment", "safe houses"],
+    "Politician": ["oratory", "debate", "lawmaking", "faction building", "revolutionary justice"]   
+}
+
+# Restricted actions and required roles
+RESTRICTED_ACTIONS = {
+    "cast": ["mage", "wizard", "sorcerer", "warlock", "druid", "cleric", "enchanter"],
+    "spell": ["mage", "wizard", "sorcerer", "warlock", "druid", "cleric", "enchanter"],
+    "magic": ["mage", "wizard", "sorcerer", "warlock", "druid", "cleric", "enchanter"],
+    "hack": ["hacker", "techie", "quantum hacker", "cyborg", "android", "ai specialist"],
+    "pilot": ["pilot", "starship captain", "space marine", "bounty hunter", "space pirate"],
+    "repair": ["engineer", "techie", "robot technician", "cyberneticist", "android"],
+    "shoot": ["space marine", "bounty hunter", "cybernetic soldier", "knight", "ranger", "paladin", "gladiator", "street samurai"],
+    "heal": ["cleric", "medic", "druid", "alchemist"]
+}
+
+def validate_action(action, role):
+    """Check if action is possible for the character's role"""
+    role_base = role.split(":")[0].strip().lower()
+    
+    # Check for restricted actions
+    for keyword, required_roles in RESTRICTED_ACTIONS.items():
+        if keyword in action.lower():
+            # Check if role is allowed for this action
+            if role_base not in [r.lower() for r in required_roles]:
+                return False, f"You try to {keyword}, but as a {role}, you have no training or ability in this area."
+    
+    return True, ""
 
 def get_role_starter(genre, role):
     """Get a role-specific starting scenario"""
@@ -304,41 +462,43 @@ player_choices_template = {
 
 # Enhanced DM system prompt focusing on narration only
 DM_SYSTEM_PROMPT = """
-You are a masterful Dungeon Master with a sharp wit and a taste for absurdity. Your role is to narrate the consequences of player actions in the most humorous, over-the-top, or ironic ways possible. Follow these rules:
+You are a masterful Dungeon Master. Your role is to narrate the consequences of player actions. Follow these rules:
 
 1. ACTION-CONSEQUENCE SYSTEM:
    - Describe ONLY the consequences of the player's action
    - Never perform actions on behalf of the player
    - Consequences must permanently change the game world
-   - Use humor, sarcasm, slapstick, or exaggeration to make events funny
-   - Small actions can have ridiculously large or unexpected consequences
+   - Narrate consequences naturally within the story flow
+   - Small actions create ripple effects through the narrative
 
 2. RESPONSE STYLE:
    - Describe what happens in the world as a result of the player's action
-   - Never say what the player does—only the aftermath
-   - Use comical NPC reactions, accidental chaos, or world logic taken to the extreme
-   - Don’t ask questions—just deliver punchlines
+   - Do not describe the player performing actions - the player has already stated their action
+   - Never use labels like "a)", "b)", "c)" - narrate everything naturally
+   - Do not explicitly ask what the player does next
 
 3. WORLD EVOLUTION:
-   - NPCs remember the most embarrassing moments
-   - Environments react with hilarity to even the most minor disturbance
-   - Faction leaders might be llamas, and currency might be turnips
-   - World events often result in unexpected or ironic situations
+   - NPCs remember player choices and react accordingly
+   - Environments change permanently based on actions
+   - Player choices open/close future narrative paths
+   - Resources are gained/lost permanently
+   - Player actions can fundamentally alter the story direction
 
 4. PLAYER AGENCY:
-   - Never say “you can’t do that”—instead, make the attempt *hilariously fail* (or succeed in a way no one wanted)
-   - Let the player break quests, glitch time, anger the laws of physics, or become the mayor of an outhouse
-   - Use consequences to twist logic and reward creativity with absurd outcomes
+   - Never say "you can't do that" - instead show the consequence of the attempt
+   - Allow players to attempt any action, no matter how unexpected
+   - If an action seems impossible, narrate why it fails and its consequences
+   - Let players break quests, destroy locations, or alter factions
 
 Example:
-Player: "I punch the goblin."
-DM: "The goblin bursts into tears and calls his lawyer. A gnome in a three-piece suit appears, slapping you with a lawsuit scroll that smells faintly of pickles."
+Player: "I attack the guard"
+DM: "The guard parries your blow and calls for reinforcements. Three more guards appear from around the corner."
 
-Player: "I offer the merchant gold."
-DM: "He scoffs, flips a monocle onto his face, and says, 'Gold? My dear peasant, I only accept coupons for cheese wheels.'"
+Player: "I try to pick the lock"
+DM: "After several tense moments, you hear a satisfying click as the lock opens. The door creaks slightly as it swings inward."
 
-Player: "I try to sneak past the dragon."
-DM: "You trip over a suspiciously placed kazoo. The dragon wakes up, laughs hysterically, and offers you a job as its personal jester."
+Player: "I offer the merchant gold"
+DM: "The merchant's eyes light up as he takes your gold. 'This will do nicely,' he says, handing you the artifact."
 """
 
 def get_current_state(player_choices):
@@ -444,6 +604,7 @@ Available commands:
 /exit             - Exit the game
 /consequences     - Show recent consequences of your actions
 /state            - Show current world state
+/capabilities     - Show what your character can do
 
 Story Adaptation:
 Every action you take will permanently change the story:
@@ -454,6 +615,14 @@ Every action you take will permanently change the story:
   - Resources are permanently gained or lost
   - You can attempt ANY action, no matter how unconventional
   - The story adapts dynamically to your choices
+
+Character Limitations:
+Your abilities are limited by your role:
+  - Peasants can't cast spells
+  - Non-technical roles can't hack systems
+  - Non-combat roles have limited fighting abilities
+  - Non-magical roles can't use healing magic
+  - Roles define what you're trained to do
 """)
 
 def remove_last_ai_response(conversation):
@@ -807,6 +976,13 @@ def main():
                 print("\nCurrent World State:")
                 print(get_current_state(player_choices))
                 continue
+                
+            if cmd == "/capabilities":
+                print(f"\n{character_name} the {role} can:")
+                capabilities = ROLE_CAPABILITIES.get(role, ["basic survival skills"])
+                for cap in capabilities:
+                    print(f"  - {cap}")
+                continue
 
             if cmd == "/redo":
                 if last_ai_reply and last_player_input:
@@ -938,6 +1114,22 @@ def main():
                     print(f"Number of subarrays with at most {k} distinct elements: {result}")
                 except Exception as e:
                     print(f"Error: {e}. Please enter valid integers.")
+                continue
+
+            # Validate action against role capabilities
+            is_valid, validation_msg = validate_action(user_input, role)
+            if not is_valid:
+                print(f"\n{validation_msg}")
+                speak(validation_msg)
+                
+                # Update conversation
+                conversation += f"\nPlayer: {user_input}\nDungeon Master: {validation_msg}"
+                
+                # Record consequence
+                player_choices['consequences'].append(validation_msg)
+                if len(player_choices['consequences']) > 5:
+                    player_choices['consequences'] = player_choices['consequences'][-5:]
+                    
                 continue
 
             # Format user input as action

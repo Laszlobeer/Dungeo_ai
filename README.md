@@ -61,7 +61,7 @@ pip install -r requirements.txt
 > 💡 If you get errors from `requirements.txt`, try installing manually:
 
 ```bash
-pip install torch transformers flask
+pip requests sounddevice numpy soundfile
 ```
 
 ---

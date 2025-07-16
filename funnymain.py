@@ -160,7 +160,6 @@ ROLE_STARTERS = {
         "Berserker": "You're sharpening your weapons for the next raid when",
         "Soldier": "You're guarding a settlement from raiders when"
     },
-
     "1880": {
         "Thief": "You're lurking in the shadows of the city alleyways when",
         "Beggar": "You're sitting on the cold street corner with your cup when",
@@ -233,13 +232,18 @@ def get_role_starter(genre, role):
         "Fantasy": "You're going about your daily duties when",
         "Sci-Fi": "You're performing routine tasks aboard your vessel when",
         "Cyberpunk": "You're navigating the neon-lit streets when",
-        "Post-Apocalyptic": "You're surviving in the wasteland when"
+        "Post-Apocalyptic": "You're surviving in the wasteland when",
+        "1880": "You're living your life in the late 19th century when",
+        "WW1": "You're experiencing the turmoil of the Great War when",
+        "1925 New York": "You're navigating the bustling streets of New York City when",
+        "Roman Empire": "You're living in the ancient world when",
+        "French Revolution": "You're experiencing the revolution when"
     }
 
     if genre in generic_starters:
-        return generic_starters[genre]
+        return f"You are a {role}. {generic_starters[genre]}"
 
-    return "You find yourself in an unexpected situation when"
+    return f"You are a {role}. You find yourself in an unexpected situation when"
 
 genres = {
     "1": ("Fantasy", [
@@ -682,22 +686,22 @@ def main():
                     # Extract world state from saved file
                     if "### Persistent World State ###" in conversation:
                         state_section = conversation.split("### Persistent World State ###")[1]
-                        # Simplified parsing
+                        # Improved parsing
                         if "Allies:" in state_section:
                             allies_line = state_section.split("Allies:")[1].split("\n")[0].strip()
                             if allies_line != "None":
-                                player_choices["allies"] = [a.strip() for a in allies_line.split(",")]
+                                player_choices["allies"] = [a.strip() for a in allies_line.split(",") if a.strip()]
                         if "Enemies:" in state_section:
                             enemies_line = state_section.split("Enemies:")[1].split("\n")[0].strip()
                             if enemies_line != "None":
-                                player_choices["enemies"] = [e.strip() for e in enemies_line.split(",")]
+                                player_choices["enemies"] = [e.strip() for e in enemies_line.split(",") if e.strip()]
                         if "Resources:" in state_section:
                             resources_lines = state_section.split("Resources:")[1].split("\n")
                             for line in resources_lines:
                                 if line.strip().startswith("-"):
-                                    parts = line.strip().split(":")
-                                    if len(parts) >= 2:
-                                        resource = parts[0].replace("-", "").strip()
+                                    parts = line.strip()[1:].split(":", 1)
+                                    if len(parts) == 2:
+                                        resource = parts[0].strip()
                                         amount = parts[1].strip()
                                         if amount.isdigit():
                                             player_choices["resources"][resource] = int(amount)
@@ -705,7 +709,7 @@ def main():
                             cons_lines = state_section.split("Consequences:")[1].split("\n")
                             for line in cons_lines:
                                 if line.strip().startswith("-"):
-                                    player_choices["consequences"].append(line.replace("-", "").strip())
+                                    player_choices["consequences"].append(line.replace("-", "", 1).strip())
             except Exception as e:
                 logging.error(f"Error loading adventure: {e}")
                 print("Error loading adventure. Details logged.")
@@ -826,6 +830,10 @@ def main():
                         "Dungeon Master:"
                     )
                     
+                    # Remove previous consequence for this action
+                    if player_choices['consequences']:
+                        player_choices['consequences'].pop()
+                    
                     # Get new AI response
                     ai_reply = get_ai_response(full_conversation)
                     if ai_reply:
@@ -872,22 +880,22 @@ def main():
                         # Extract world state from saved file
                         if "### Persistent World State ###" in conversation:
                             state_section = conversation.split("### Persistent World State ###")[1]
-                            # Simplified parsing
+                            # Improved parsing
                             if "Allies:" in state_section:
                                 allies_line = state_section.split("Allies:")[1].split("\n")[0].strip()
                                 if allies_line != "None":
-                                    player_choices["allies"] = [a.strip() for a in allies_line.split(",")]
+                                    player_choices["allies"] = [a.strip() for a in allies_line.split(",") if a.strip()]
                             if "Enemies:" in state_section:
                                 enemies_line = state_section.split("Enemies:")[1].split("\n")[0].strip()
                                 if enemies_line != "None":
-                                    player_choices["enemies"] = [e.strip() for e in enemies_line.split(",")]
+                                    player_choices["enemies"] = [e.strip() for e in enemies_line.split(",") if e.strip()]
                             if "Resources:" in state_section:
                                 resources_lines = state_section.split("Resources:")[1].split("\n")
                                 for line in resources_lines:
                                     if line.strip().startswith("-"):
-                                        parts = line.strip().split(":")
-                                        if len(parts) >= 2:
-                                            resource = parts[0].replace("-", "").strip()
+                                        parts = line.strip()[1:].split(":", 1)
+                                        if len(parts) == 2:
+                                            resource = parts[0].strip()
                                             amount = parts[1].strip()
                                             if amount.isdigit():
                                                 player_choices["resources"][resource] = int(amount)
@@ -895,7 +903,7 @@ def main():
                                 cons_lines = state_section.split("Consequences:")[1].split("\n")
                                 for line in cons_lines:
                                     if line.strip().startswith("-"):
-                                        player_choices["consequences"].append(line.replace("-", "").strip())
+                                        player_choices["consequences"].append(line.replace("-", "", 1).strip())
                     except Exception as e:
                         logging.error(f"Error loading adventure: {e}")
                         print("Error loading adventure. Details logged.")

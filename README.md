@@ -118,12 +118,6 @@ python main.py
 This project is based on OpenSource AI Tool by [Laszlo](https://github.com/Laszlobeer/Dungeo_ai)
 ```
 
----
-
-## ☕ Support My Work
-
-If you find this project helpful, consider [buying me a coffee](https://ko-fi.com/laszlobeer)!
-Your support helps me continue building awesome open-source tools. ❤️
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/laszlobeer)
 

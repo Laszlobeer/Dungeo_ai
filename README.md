@@ -116,10 +116,4 @@ python main.py
 
 ```
 This project is based on OpenSource AI Tool by [Laszlo](https://github.com/Laszlobeer/Dungeo_ai)
-```
-
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/laszlobeer)
-
----
 

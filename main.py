@@ -271,40 +271,46 @@ genres = {
     ])
 }
 
-# Build a base DM system prompt
+# Build a base DM system prompt with enhanced freedom of action
 BASE_DM_PROMPT = """
 You are a masterful Dungeon Master. Your role is to narrate the consequences of player actions. Follow these rules:
 
-1. ACTION-CONSEQUENCE SYSTEM:
+1. ABSOLUTE PLAYER FREEDOM:
+   - The player has complete free will and can do anything they want.
+   - Never force any particular narrative direction or quest.
+   - If the player ignores an NPC or quest, show the natural consequences.
+   - The player can completely change the story with any action.
+
+2. ACTION-CONSEQUENCE SYSTEM:
    - Describe ONLY the consequences of the player's action.
    - Never perform actions on behalf of the player.
    - Consequences must permanently change the game world.
    - Narrate consequences naturally within the story flow.
    - Small actions create ripple effects through the narrative.
 
-2. RESPONSE STYLE:
+3. RESPONSE STYLE:
    - Describe what happens in the world as a result of the player's action.
    - Do not describe the player performing actions—the player has already stated their action.
    - Never use labels like "a)", "b)", "c)"; narrate everything naturally.
    - Do not explicitly ask what the player does next.
 
-3. WORLD EVOLUTION:
+4. WORLD EVOLUTION:
    - NPCs remember player choices and react accordingly.
    - Environments change permanently based on actions.
    - Player choices open or close future narrative paths.
    - Resources are gained or lost permanently.
    - Player actions can fundamentally alter the story direction.
 
-4. PLAYER AGENCY:
-   - Never say "you can't do that"—instead, show the consequence of the attempt.
-   - Allow players to attempt any action, no matter how unexpected.
-   - If an action seems impossible, narrate why it fails and its consequences.
-   - Let players break quests, destroy locations, or alter factions.
+5. NO FORCED NARRATIVES:
+   - Never assume the player will follow any suggested path.
+   - If the player ignores a quest, show how that affects the world.
+   - If the player rejects an item, show what happens to it.
+   - The story should be completely shaped by player choices.
 """
 
 # Adult content opt-in block (safe alternative)
 ADULT_CONTENT_BLOCK = """
-5. MATURE-CONTENT (OPT-IN):
+6. MATURE-CONTENT (OPT-IN):
    - If the player has explicitly opted in to 'mature content', you may include depiction of sexual or erotic content
      between *consenting adults* that is relevant to the story.
    - You must NOT depict minors, or imply participation by anyone under the age of 18.
@@ -349,14 +355,20 @@ def get_current_state(player_choices):
     # Add recent world events
     if player_choices['world_events']:
         state.append("Recent World Events:")
-        for event in player_choices['world_events'][-3:]:
+        for event in player_choices['world_events'][-5:]:
             state.append(f"  - {event}")
     
     # Add recent consequences
     if player_choices['consequences']:
         state.append("Recent Consequences:")
-        for cons in player_choices['consequences'][-3:]:
+        for cons in player_choices['consequences'][-5:]:
             state.append(f"  - {cons}")
+    
+    # Add ignored quests/items
+    if player_choices['ignored_quests']:
+        state.append("Ignored Quests:")
+        for quest in player_choices['ignored_quests'][-5:]:
+            state.append(f"  - {quest}")
     
     return "\n".join(state)
 
@@ -369,7 +381,7 @@ def get_ai_response(prompt, model=ollama_model):
                 "prompt": prompt,
                 "stream": False,
                 "options": {
-                    "temperature": 0.7,
+                    "temperature": 0.8,  # Increased for more creative responses
                     "stop": ["\n\n"],
                     "min_p": 0.05,
                 }
@@ -425,15 +437,14 @@ Available commands:
 /consequences     - Show recent consequences of your actions
 /state            - Show current world state
 
-Story Adaptation:
-Every action you take will permanently change the story:
-  - Killing characters removes them permanently
-  - Stealing items adds them to your inventory
-  - Choices affect NPC attitudes and world events
-  - Environments change based on your actions
-  - Resources are permanently gained or lost
-  - You can attempt ANY action, no matter how unconventional
-  - The story adapts dynamically to your choices
+ABSOLUTE FREEDOM:
+You have complete free will in this world:
+  - Ignore any quest, NPC, or suggested storyline
+  - Do anything you can imagine, no matter how unconventional
+  - The story will adapt completely to your choices
+  - Your actions have permanent consequences
+  - You can completely change the direction of the story
+  - The world reacts organically to your decisions
 """)
 
 def remove_last_ai_response(conversation):
@@ -504,13 +515,13 @@ def update_world_state(action, response, player_choices):
     if new_consequence not in player_choices['consequences']:
         player_choices['consequences'].append(new_consequence)
 
-    # Keep only the last 5 consequences
-    if len(player_choices['consequences']) > 5:
-        player_choices['consequences'] = player_choices['consequences'][-5:]
+    # Keep only the last 10 consequences
+    if len(player_choices['consequences']) > 10:
+        player_choices['consequences'] = player_choices['consequences'][-10:]
 
     # Update allies
     ally_matches = re.findall(
-        r'(\b[A-Z][a-z]+\b) (?:joins|helps|saves|allies with|becomes your ally|supports you)',
+        r'(\b[A-Z][a-z]+\b) (?:joins|helps|saves|allies with|becomes your ally|supports you|befriends)',
         response,
         re.IGNORECASE
     )
@@ -522,7 +533,7 @@ def update_world_state(action, response, player_choices):
 
     # Update enemies
     enemy_matches = re.findall(
-        r'(\b[A-Z][a-z]+\b) (?:dies|killed|falls|perishes|becomes your enemy|turns against you|hates you)',
+        r'(\b[A-Z][a-z]+\b) (?:dies|killed|falls|perishes|becomes your enemy|turns against you|hates you|attacks you|betrays you)',
         response,
         re.IGNORECASE
     )
@@ -534,7 +545,7 @@ def update_world_state(action, response, player_choices):
 
     # Update resources (more flexible matching)
     resource_matches = re.findall(
-        r'(?:get|find|acquire|obtain|receive|gain|steal|take) (\d+) (\w+)',
+        r'(?:get|find|acquire|obtain|receive|gain|steal|take|collect|pick up|loot) (\d+) (\w+)',
         response,
         re.IGNORECASE
     )
@@ -545,7 +556,7 @@ def update_world_state(action, response, player_choices):
 
     # Update lost resources
     lost_matches = re.findall(
-        r'(?:lose|drop|spend|use|expend|give|donate|surrender) (\d+) (\w+)',
+        r'(?:lose|drop|spend|use|expend|give|donate|surrender|waste) (\d+) (\w+)',
         response,
         re.IGNORECASE
     )
@@ -556,7 +567,7 @@ def update_world_state(action, response, player_choices):
 
     # Update world events
     world_event_matches = re.findall(
-        r'(?:The|A|An) (\w+ \w+) (?:is|has been|becomes) (destroyed|created|changed|revealed|altered|ruined|rebuilt)',
+        r'(?:The|A|An) (\w+ \w+) (?:is|has been|becomes) (destroyed|created|changed|revealed|altered|ruined|rebuilt|transformed)',
         response,
         re.IGNORECASE
     )
@@ -575,21 +586,37 @@ def update_world_state(action, response, player_choices):
                 player_choices['completed_quests'].append(quest_name)
 
     if "new quest" in response.lower() or "quest started" in response.lower():
-        quest_match = re.search(r'quest ["\']?(.*?)["\']? (?:is|has been) (?:given|started)', response, re.IGNORECASE)
+        quest_match = re.search(r'quest ["\']?(.*?)["\']? (?:is|has been) (?:given|started|assigned)', response, re.IGNORECASE)
         if quest_match:
             quest_name = quest_match.group(1)
             if quest_name not in player_choices['active_quests'] and quest_name not in player_choices['completed_quests']:
                 player_choices['active_quests'].append(quest_name)
 
+    # Track ignored quests
+    ignore_phrases = [
+        "ignore", "refuse", "reject", "decline", "walk away from", "turn down",
+        "don't care about", "not interested in"
+    ]
+    if any(phrase in action.lower() for phrase in ignore_phrases):
+        quest_match = re.search(r'quest|mission|task|request', action, re.IGNORECASE)
+        if quest_match:
+            ignored_quest = f"Ignored: {action.split('quest')[0] if 'quest' in action.lower() else action}"
+            if ignored_quest not in player_choices['ignored_quests']:
+                player_choices['ignored_quests'].append(ignored_quest)
+                
+                # Keep only the last 10 ignored quests
+                if len(player_choices['ignored_quests']) > 10:
+                    player_choices['ignored_quests'] = player_choices['ignored_quests'][-10:]
+
     # Update reputation
-    if "reputation increases" in response.lower() or "reputation improved" in response.lower():
+    if "reputation increases" in response.lower() or "reputation improved" in response.lower() or "gains favor" in response.lower():
         player_choices['reputation'] += 1
-    elif "reputation decreases" in response.lower() or "reputation damaged" in response.lower():
+    elif "reputation decreases" in response.lower() or "reputation damaged" in response.lower() or "loses favor" in response.lower():
         player_choices['reputation'] = max(-5, player_choices['reputation'] - 1)
 
     # Update factions
     faction_matches = re.findall(
-        r'(?:The|Your) (\w+) faction (?:likes|respects|trusts|appreciates) you more',
+        r'(?:The|Your) (\w+) faction (?:likes|respects|trusts|appreciates|favors) you more',
         response,
         re.IGNORECASE
     )
@@ -597,7 +624,7 @@ def update_world_state(action, response, player_choices):
         player_choices['factions'][faction] += 1
 
     faction_loss_matches = re.findall(
-        r'(?:The|Your) (\w+) faction (?:dislikes|distrusts|hates|condemns) you more',
+        r'(?:The|Your) (\w+) faction (?:dislikes|distrusts|hates|condemns|opposes) you more',
         response,
         re.IGNORECASE
     )
@@ -606,7 +633,7 @@ def update_world_state(action, response, player_choices):
 
     # Add dynamic discoveries
     discovery_matches = re.findall(
-        r'(?:discover|find|uncover|learn about|reveal) (?:a |an |the )?(.+?)\.',
+        r'(?:discover|find|uncover|learn about|reveal|stumble upon) (?:a |an |the )?(.+?)\.',
         response,
         re.IGNORECASE
     )
@@ -674,7 +701,7 @@ def main():
 
     DM_SYSTEM_PROMPT = build_dm_prompt(mature_enabled)
 
-    # Initialize player choices
+    # Initialize player choices with enhanced tracking
     player_choices = {
         "allies": [],
         "enemies": [],
@@ -685,7 +712,8 @@ def main():
         "completed_quests": [],
         "active_quests": [],
         "world_events": [],
-        "consequences": []
+        "consequences": [],
+        "ignored_quests": []  # Track quests the player has ignored
     }
 
     # Try to load from JSON first, then fall back to text
@@ -765,6 +793,8 @@ def main():
         print(f"\n--- Adventure Start: {character_name} the {role} ---")
         print(f"Starting scenario: {role_starter}")
         print("Type '/?' or '/help' for commands.\n")
+        print("REMEMBER: You have complete freedom to do anything you want!")
+        print("Ignore quests, reject items, or create your own path - the world will adapt.\n")
 
         # Build initial context
         initial_context = (
@@ -772,6 +802,7 @@ def main():
             f"Genre: {selected_genre}\n"
             f"Player Character: {character_name} the {role}\n"
             f"Starting Scenario: {role_starter}\n"
+            f"Player Freedom: The player has complete free will and can do anything\n"
         )
         conversation = initial_context + "\n\nDungeon Master: "
 
@@ -937,7 +968,7 @@ def main():
                         end_idx = len(conversation)
                     preserve_sections.append(conversation[start_idx:end_idx])
                 
-                # Preserve recent consequences (last 3)
+                # Preserve recent consequences (last 5)
                 if "Recent Consequences:" in state_context:
                     start_idx = state_context.find("Recent Consequences:")
                     preserve_sections.append(state_context[start_idx:])

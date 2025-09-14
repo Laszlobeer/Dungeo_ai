@@ -1,3 +1,4 @@
+# main.py
 import random
 import requests
 import sounddevice as sd
@@ -90,7 +91,7 @@ else:
 
 print(f"Using Ollama model: {ollama_model}\n")
 
-# Role-specific starting scenarios
+# Role-specific starting scenarios (same as your original file)
 ROLE_STARTERS = {
     "Fantasy": {
         "Peasant": "You're toiling in the fields of a small village when",
@@ -303,46 +304,57 @@ player_choices_template = {
     "consequences": []
 }
 
-# Enhanced DM system prompt focusing on narration only
-DM_SYSTEM_PROMPT = """
+# Build a base DM system prompt; we will add an optional adult-consent section
+BASE_DM_PROMPT = """
 You are a masterful Dungeon Master. Your role is to narrate the consequences of player actions. Follow these rules:
 
 1. ACTION-CONSEQUENCE SYSTEM:
-   - Describe ONLY the consequences of the player's action
-   - Never perform actions on behalf of the player
-   - Consequences must permanently change the game world
-   - Narrate consequences naturally within the story flow
-   - Small actions create ripple effects through the narrative
+   - Describe ONLY the consequences of the player's action.
+   - Never perform actions on behalf of the player.
+   - Consequences must permanently change the game world.
+   - Narrate consequences naturally within the story flow.
+   - Small actions create ripple effects through the narrative.
 
 2. RESPONSE STYLE:
-   - Describe what happens in the world as a result of the player's action
-   - Do not describe the player performing actions - the player has already stated their action
-   - Never use labels like "a)", "b)", "c)" - narrate everything naturally
-   - Do not explicitly ask what the player does next
+   - Describe what happens in the world as a result of the player's action.
+   - Do not describe the player performing actions—the player has already stated their action.
+   - Never use labels like "a)", "b)", "c)"; narrate everything naturally.
+   - Do not explicitly ask what the player does next.
 
 3. WORLD EVOLUTION:
-   - NPCs remember player choices and react accordingly
-   - Environments change permanently based on actions
-   - Player choices open/close future narrative paths
-   - Resources are gained/lost permanently
-   - Player actions can fundamentally alter the story direction
+   - NPCs remember player choices and react accordingly.
+   - Environments change permanently based on actions.
+   - Player choices open or close future narrative paths.
+   - Resources are gained or lost permanently.
+   - Player actions can fundamentally alter the story direction.
 
 4. PLAYER AGENCY:
-   - Never say "you can't do that" - instead show the consequence of the attempt
-   - Allow players to attempt any action, no matter how unexpected
-   - If an action seems impossible, narrate why it fails and its consequences
-   - Let players break quests, destroy locations, or alter factions
-
-Example:
-Player: "I attack the guard"
-DM: "The guard parries your blow and calls for reinforcements. Three more guards appear from around the corner."
-
-Player: "I try to pick the lock"
-DM: "After several tense moments, you hear a satisfying click as the lock opens. The door creaks slightly as it swings inward."
-
-Player: "I offer the merchant gold"
-DM: "The merchant's eyes light up as he takes your gold. 'This will do nicely,' he says, handing you the artifact."
+   - Never say "you can't do that"—instead, show the consequence of the attempt.
+   - Allow players to attempt any action, no matter how unexpected.
+   - If an action seems impossible, narrate why it fails and its consequences.
+   - Let players break quests, destroy locations, or alter factions.
 """
+
+# Adult content opt-in block (safe alternative)
+ADULT_CONTENT_BLOCK = """
+5. MATURE-CONTENT (OPT-IN):
+   - If the player has explicitly opted in to 'mature content', you may include depiction of sexual or erotic content
+     between *consenting adults* that is relevant to the story.
+   - You must NOT depict minors, or imply participation by anyone under the age of 18.
+   - You must NOT depict or endorse non-consensual sexual activity or sexual activity coerced by force.
+   - You must NOT provide instruction for illegal sexual acts or exploitative behavior.
+   - Maintain respect for consent: when consent is relevant, make clear that actions are consensual in the narrative.
+   - Always follow the platform's safety and content policies; do not attempt to bypass them.
+"""
+
+# Compose final DM prompt based on an opt-in flag (we will set that at runtime)
+def build_dm_prompt(mature_enabled: bool) -> str:
+    prompt = BASE_DM_PROMPT
+    if mature_enabled:
+        prompt += "\n" + ADULT_CONTENT_BLOCK
+    # Final instruction to respect any system / platform safety
+    prompt += "\n\n# Always comply with the platform's safety policies. If something requested would violate those policies (minors, non-consensual acts, illegal instructions), refuse or safely redirect and narrate consequences instead.\n"
+    return prompt
 
 def get_current_state(player_choices):
     """Generate a string representation of the current world state"""
@@ -393,7 +405,7 @@ def get_ai_response(prompt, model=ollama_model):
                     "temperature": 0.7,
                     "stop": ["\n\n"],
                     "min_p": 0.05,
-                    "top_k": 40
+                    
                 }
             },
             timeout=60
@@ -467,10 +479,15 @@ def remove_last_ai_response(conversation):
     return conversation[:pos].strip()
 
 def sanitize_response(response):
+    """
+    Light sanitization: remove direct question prompts / option labels / structured choices,
+    but keep narrative lines (including action consequences and descriptive phrases).
+    We do not strip player-action phrasing here so mature descriptions are retained if the model is allowed to produce them.
+    """
     if not response:
         return "The story continues..."
 
-    # Remove any explicit question prompts
+    # Remove any explicit question prompts at the end that ask the player what to do
     question_phrases = [
         r"what will you do", r"how do you respond", r"what do you do",
         r"what is your next move", r"what would you like to do",
@@ -479,55 +496,40 @@ def sanitize_response(response):
     ]
 
     for phrase in question_phrases:
-        pattern = re.compile(rf'{phrase}.*?$', re.IGNORECASE)
+        pattern = re.compile(rf'{phrase}.*?$', re.IGNORECASE | re.DOTALL)
         response = pattern.sub('', response)
 
-    # Remove any explicit structure markers
+    # Remove explicit structure markers (a), b), etc.)
     structure_phrases = [
-        r"a\)", r"b\)", r"c\)", r"d\)", r"e\)", r"option [a-e]:",
-        r"immediate consequence:", r"new situation:", r"next challenges:",
-        r"choices:", r"options:"
+        r"\b[a-e]\)", r"option [a-e]:", r"immediate consequence:", r"new situation:",
+        r"next challenges:", r"choices:", r"options:"
     ]
     for phrase in structure_phrases:
-        pattern = re.compile(phrase, re.IGNORECASE)
-        response = pattern.sub('', response)
+        response = re.sub(phrase, '', response, flags=re.IGNORECASE)
 
-    # Remove player action descriptions
-    player_action_patterns = [
-        r"you (?:try to|attempt to|begin to|start to|decide to) .+?\.", 
-        r"you (?:successfully|carefully|quickly) .+?\.", 
-        r"you (?:manage to|fail to) .+?\."
-    ]
-    
-    for pattern in player_action_patterns:
-        response = re.sub(pattern, '', response, flags=re.IGNORECASE)
-
-    # Remove multiple-choice blocks
+    # Remove multiple-choice lines like "A) ..." blocks
     response = re.sub(
-        r'(?:\n|\. )?[A-Ea-e]\)[^\.\?\!\n]*(\n|\. |$)', 
-        '', 
+        r'(?:\n|\. )?[A-Ea-e]\)[^\.\?\!\n]*(\n|\. |$)',
+        '',
         response,
         flags=re.IGNORECASE
     )
-    
-    # Remove "something else" options
+
+    # Remove "something else" option blocks
     response = re.sub(
-        r'(?:something else|other) \(.*?\)', 
-        '', 
-        response, 
+        r'(?:something else|other) \(.*?\)',
+        '',
+        response,
         flags=re.IGNORECASE
     )
 
-    # Clean up extra spaces
+    # Clean up whitespace
     response = re.sub(r'\s{2,}', ' ', response).strip()
 
-    # Ensure proper punctuation
+    # Ensure punctuation
     if response and response[-1] not in ('.', '!', '?', ':', ','):
         response += '.'
-    
-    # Remove state tracking markers if any
-    response = re.sub(r'\[[^\]]*State Tracking[^\]]*\]', '', response)
-    
+
     return response
 
 def update_world_state(action, response, player_choices):
@@ -536,15 +538,15 @@ def update_world_state(action, response, player_choices):
     new_consequence = f"After '{action}': {response.split('.')[0]}"
     if new_consequence not in player_choices['consequences']:
         player_choices['consequences'].append(new_consequence)
-    
+
     # Keep only the last 5 consequences
     if len(player_choices['consequences']) > 5:
         player_choices['consequences'] = player_choices['consequences'][-5:]
-    
+
     # Update allies
     ally_matches = re.findall(
         r'(\b[A-Z][a-z]+\b) (?:joins|helps|saves|allies with|becomes your ally|supports you)',
-        response, 
+        response,
         re.IGNORECASE
     )
     for ally in ally_matches:
@@ -552,11 +554,11 @@ def update_world_state(action, response, player_choices):
             player_choices['allies'].append(ally)
             if ally in player_choices['enemies']:
                 player_choices['enemies'].remove(ally)
-    
+
     # Update enemies
     enemy_matches = re.findall(
         r'(\b[A-Z][a-z]+\b) (?:dies|killed|falls|perishes|becomes your enemy|turns against you|hates you)',
-        response, 
+        response,
         re.IGNORECASE
     )
     for enemy in enemy_matches:
@@ -564,22 +566,22 @@ def update_world_state(action, response, player_choices):
             player_choices['enemies'].append(enemy)
         if enemy in player_choices['allies']:
             player_choices['allies'].remove(enemy)
-    
+
     # Update resources (more flexible matching)
     resource_matches = re.findall(
         r'(?:get|find|acquire|obtain|receive|gain|steal|take) (\d+) (\w+)',
-        response, 
+        response,
         re.IGNORECASE
     )
     for amount, resource in resource_matches:
         resource = resource.lower()
         player_choices['resources'].setdefault(resource, 0)
         player_choices['resources'][resource] += int(amount)
-    
-    # Update lost resources (more flexible matching)
+
+    # Update lost resources
     lost_matches = re.findall(
         r'(?:lose|drop|spend|use|expend|give|donate|surrender) (\d+) (\w+)',
-        response, 
+        response,
         re.IGNORECASE
     )
     for amount, resource in lost_matches:
@@ -587,18 +589,18 @@ def update_world_state(action, response, player_choices):
         if resource in player_choices['resources']:
             player_choices['resources'][resource] = max(0, player_choices['resources'][resource] - int(amount))
 
-    # Update world events (more flexible matching)
+    # Update world events
     world_event_matches = re.findall(
         r'(?:The|A|An) (\w+ \w+) (?:is|has been|becomes) (destroyed|created|changed|revealed|altered|ruined|rebuilt)',
-        response, 
+        response,
         re.IGNORECASE
     )
     for location, event in world_event_matches:
         event_text = f"{location} {event}"
         if event_text not in player_choices['world_events']:
             player_choices['world_events'].append(event_text)
-    
-    # Update quests (more flexible matching)
+
+    # Update quests
     if "quest completed" in response.lower() or "completed the quest" in response.lower():
         quest_match = re.search(r'quest ["\']?(.*?)["\']? (?:is|has been) completed', response, re.IGNORECASE)
         if quest_match:
@@ -606,41 +608,41 @@ def update_world_state(action, response, player_choices):
             if quest_name in player_choices['active_quests']:
                 player_choices['active_quests'].remove(quest_name)
                 player_choices['completed_quests'].append(quest_name)
-    
+
     if "new quest" in response.lower() or "quest started" in response.lower():
         quest_match = re.search(r'quest ["\']?(.*?)["\']? (?:is|has been) (?:given|started)', response, re.IGNORECASE)
         if quest_match:
             quest_name = quest_match.group(1)
             if quest_name not in player_choices['active_quests'] and quest_name not in player_choices['completed_quests']:
                 player_choices['active_quests'].append(quest_name)
-    
+
     # Update reputation
     if "reputation increases" in response.lower() or "reputation improved" in response.lower():
         player_choices['reputation'] += 1
     elif "reputation decreases" in response.lower() or "reputation damaged" in response.lower():
         player_choices['reputation'] = max(-5, player_choices['reputation'] - 1)
-    
+
     # Update factions
     faction_matches = re.findall(
-        r'(?:The|Your) (\w+) faction (?:likes|respects|trusts|appreciates) you more', 
-        response, 
+        r'(?:The|Your) (\w+) faction (?:likes|respects|trusts|appreciates) you more',
+        response,
         re.IGNORECASE
     )
     for faction in faction_matches:
         player_choices['factions'][faction] += 1
-    
+
     faction_loss_matches = re.findall(
-        r'(?:The|Your) (\w+) faction (?:dislikes|distrusts|hates|condemns) you more', 
-        response, 
+        r'(?:The|Your) (\w+) faction (?:dislikes|distrusts|hates|condemns) you more',
+        response,
         re.IGNORECASE
     )
     for faction in faction_loss_matches:
         player_choices['factions'][faction] -= 1
-        
+
     # Add dynamic discoveries
     discovery_matches = re.findall(
-        r'(?:discover|find|uncover|learn about|reveal) (?:a |an |the )?(.+?)\.', 
-        response, 
+        r'(?:discover|find|uncover|learn about|reveal) (?:a |an |the )?(.+?)\.',
+        response,
         re.IGNORECASE
     )
     for discovery in discovery_matches:
@@ -656,6 +658,20 @@ def main():
     role = ""
     adventure_started = False
     last_player_input = ""
+
+    # Ask the user whether they want mature content
+    mature_enabled = False
+    while True:
+        ans = input("Enable mature (adult, consenting-adult) content? (y/n) [n]: ").strip().lower()
+        if ans == "" or ans == "n":
+            mature_enabled = False
+            break
+        if ans == "y":
+            mature_enabled = True
+            break
+        print("Please answer 'y' or 'n'.")
+
+    DM_SYSTEM_PROMPT = build_dm_prompt(mature_enabled)
 
     # Initialize player choices
     player_choices = {

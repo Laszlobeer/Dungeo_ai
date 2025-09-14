@@ -8,6 +8,7 @@ import subprocess
 import re
 import logging
 import datetime
+import json
 from collections import defaultdict
 
 # Configure logging
@@ -35,36 +36,13 @@ def get_installed_models():
         logging.error(f"Error getting installed models: {e}")
         return []
 
-# Count subarrays with at most k distinct elements
-def count_subarrays(arr, k):
-    """Calculate number of subarrays with at most k distinct elements"""
-    n = len(arr)
-    left = 0
-    distinct = 0
-    freq = defaultdict(int)
-    total = 0
-    for right in range(n):
-        if freq[arr[right]] == 0:
-            distinct += 1
-        freq[arr[right]] += 1
-
-        while distinct > k:
-            freq[arr[left]] -= 1
-            if freq[arr[left]] == 0:
-                distinct -= 1
-            left += 1
-
-        total += (right - left + 1)
-
-    return total
-
 # More accurate token count approximation
 def count_tokens(text):
     return max(1, int(len(text) / 3.5))
 
 # Initial model selection
 installed_models = get_installed_models()
-ollama_model = "llama3:instruct"  # Set default first
+ollama_model = "llama3:instruct"  # Set default
 
 if installed_models:
     print("Available Ollama models:")
@@ -86,23 +64,21 @@ else:
     model_input = input("Enter Ollama model name (or press Enter for default llama3:instruct): ").strip()
     if model_input:
         ollama_model = model_input
-    else:
-        ollama_model = "llama3:instruct"
 
 print(f"Using Ollama model: {ollama_model}\n")
 
-# Role-specific starting scenarios (same as your original file)
+# Role-specific starting scenarios
 ROLE_STARTERS = {
     "Fantasy": {
-        "Peasant": "You're toiling in the fields of a small village when",
-        "Noble": "You're overseeing your estate's affairs when",
+        "Peasant": "You're working in the fields of a small village when",
+        "Noble": "You're waking up from your bed in your mansion when",
         "Mage": "You're studying ancient tomes in your tower when",
         "Knight": "You're training in the castle courtyard when",
-        "Ranger": "You're tracking game in the deep forest when",
-        "Thief": "You're casing a noble's manor in the city when",
+        "Ranger": "You're tracking animals in the deep forest when",
+        "Thief": "You're casing a noble's house from an alley in a city when",
         "Bard": "You're performing in a crowded tavern when",
         "Cleric": "You're tending to the sick in the temple when",
-        "Assassin": "You're preparing for a contract in the shadows when",
+        "Assassin": "You're preparing to attack your target in the shadows when",
         "Paladin": "You're praying at the altar of your deity when",
         "Alchemist": "You're carefully measuring reagents in your alchemy lab when",
         "Druid": "You're communing with nature in the sacred grove when",
@@ -235,7 +211,12 @@ def get_role_starter(genre, role):
         "Fantasy": "You're going about your daily duties when",
         "Sci-Fi": "You're performing routine tasks aboard your vessel when",
         "Cyberpunk": "You're navigating the neon-lit streets when",
-        "Post-Apocalyptic": "You're surviving in the wasteland when"
+        "Post-Apocalyptic": "You're surviving in the wasteland when",
+        "1880": "You're going about your daily life in the city when",
+        "WW1": "You're surviving the horrors of war when",
+        "1925 New York": "You're navigating the bustling streets of New York when",
+        "Roman Empire": "You're living your life in ancient Rome when",
+        "French Revolution": "You're caught up in the revolution when"
     }
 
     if genre in generic_starters:
@@ -290,21 +271,7 @@ genres = {
     ])
 }
 
-# Player choices structure to track story elements
-player_choices_template = {
-    "allies": [],
-    "enemies": [],
-    "discoveries": [],
-    "reputation": 0,
-    "resources": {},
-    "factions": defaultdict(int),
-    "completed_quests": [],
-    "active_quests": [],
-    "world_events": [],
-    "consequences": []
-}
-
-# Build a base DM system prompt; we will add an optional adult-consent section
+# Build a base DM system prompt
 BASE_DM_PROMPT = """
 You are a masterful Dungeon Master. Your role is to narrate the consequences of player actions. Follow these rules:
 
@@ -347,7 +314,7 @@ ADULT_CONTENT_BLOCK = """
    - Always follow the platform's safety and content policies; do not attempt to bypass them.
 """
 
-# Compose final DM prompt based on an opt-in flag (we will set that at runtime)
+# Compose final DM prompt based on an opt-in flag
 def build_dm_prompt(mature_enabled: bool) -> str:
     prompt = BASE_DM_PROMPT
     if mature_enabled:
@@ -405,7 +372,6 @@ def get_ai_response(prompt, model=ollama_model):
                     "temperature": 0.7,
                     "stop": ["\n\n"],
                     "min_p": 0.05,
-                    
                 }
             },
             timeout=60
@@ -455,7 +421,6 @@ Available commands:
 /save             - Save the full adventure to adventure.txt
 /load             - Load the adventure from adventure.txt
 /change           - Switch to a different Ollama model
-/count            - Calculate subarrays with at most k distinct elements
 /exit             - Exit the game
 /consequences     - Show recent consequences of your actions
 /state            - Show current world state
@@ -481,8 +446,7 @@ def remove_last_ai_response(conversation):
 def sanitize_response(response):
     """
     Light sanitization: remove direct question prompts / option labels / structured choices,
-    but keep narrative lines (including action consequences and descriptive phrases).
-    We do not strip player-action phrasing here so mature descriptions are retained if the model is allowed to produce them.
+    but keep narrative lines.
     """
     if not response:
         return "The story continues..."
@@ -535,7 +499,8 @@ def sanitize_response(response):
 def update_world_state(action, response, player_choices):
     """Update world state based on player action and consequence"""
     # Record the consequence (first sentence only)
-    new_consequence = f"After '{action}': {response.split('.')[0]}"
+    first_sentence = response.split('.')[0]
+    new_consequence = f"After '{action[:30]}{'...' if len(action) > 30 else ''}': {first_sentence}"
     if new_consequence not in player_choices['consequences']:
         player_choices['consequences'].append(new_consequence)
 
@@ -649,6 +614,42 @@ def update_world_state(action, response, player_choices):
         if discovery not in player_choices['discoveries']:
             player_choices['discoveries'].append(discovery)
 
+def save_adventure(conversation, player_choices):
+    """Save adventure to a JSON file for reliable loading"""
+    try:
+        save_data = {
+            "conversation": conversation,
+            "player_choices": player_choices
+        }
+        
+        with open("adventure.json", "w", encoding="utf-8") as f:
+            json.dump(save_data, f, ensure_ascii=False, indent=2)
+            
+        # Also save a human-readable version
+        with open("adventure.txt", "w", encoding="utf-8") as f:
+            f.write(conversation)
+            f.write("\n\n### Persistent World State ###\n")
+            f.write(get_current_state(player_choices))
+            
+        return True
+    except Exception as e:
+        logging.error(f"Error saving adventure: {e}")
+        return False
+
+def load_adventure():
+    """Load adventure from JSON file"""
+    try:
+        if not os.path.exists("adventure.json"):
+            return None, None
+            
+        with open("adventure.json", "r", encoding="utf-8") as f:
+            save_data = json.load(f)
+            
+        return save_data["conversation"], save_data["player_choices"]
+    except Exception as e:
+        logging.error(f"Error loading adventure: {e}")
+        return None, None
+
 def main():
     global ollama_model
     last_ai_reply = ""
@@ -687,27 +688,29 @@ def main():
         "consequences": []
     }
 
-    if os.path.exists("adventure.txt"):
+    # Try to load from JSON first, then fall back to text
+    loaded_conversation, loaded_choices = load_adventure()
+    if loaded_conversation is not None:
+        conversation = loaded_conversation
+        player_choices.update(loaded_choices)
+        print("Adventure loaded from JSON.\n")
+        
+        # Find the last DM response
+        last_dm_pos = conversation.rfind("Dungeon Master:")
+        if last_dm_pos != -1:
+            reply = conversation[last_dm_pos + len("Dungeon Master:"):].strip()
+            print(f"Dungeon Master: {reply}")
+            speak(reply)
+            last_ai_reply = reply
+            adventure_started = True
+    elif os.path.exists("adventure.txt"):
         print("A saved adventure exists. Load it now? (y/n)")
         if input().strip().lower() == "y":
             try:
-                # Reset player choices before loading
-                player_choices = {
-                    "allies": [],
-                    "enemies": [],
-                    "discoveries": [],
-                    "reputation": 0,
-                    "resources": {},
-                    "factions": defaultdict(int),
-                    "completed_quests": [],
-                    "active_quests": [],
-                    "world_events": [],
-                    "consequences": []
-                }
-                
                 with open("adventure.txt", "r", encoding="utf-8") as f:
                     conversation = f.read()
-                print("Adventure loaded.\n")
+                print("Adventure loaded from text file.\n")
+                
                 last_dm_pos = conversation.rfind("Dungeon Master:")
                 if last_dm_pos != -1:
                     reply = conversation[last_dm_pos + len("Dungeon Master:"):].strip()
@@ -715,39 +718,6 @@ def main():
                     speak(reply)
                     last_ai_reply = reply
                     adventure_started = True
-                    
-                    # Extract world state from saved file
-                    if "### Persistent World State ###" in conversation:
-                        state_section = conversation.split("### Persistent World State ###")[1]
-                        
-                        # Robust parsing for world state
-                        if "Allies:" in state_section:
-                            allies_line = state_section.split("Allies:", 1)[1].split("\n", 1)[0].strip()
-                            if allies_line != "None":
-                                player_choices["allies"] = [a.strip() for a in allies_line.split(",")]
-                        if "Enemies:" in state_section:
-                            enemies_line = state_section.split("Enemies:", 1)[1].split("\n", 1)[0].strip()
-                            if enemies_line != "None":
-                                player_choices["enemies"] = [e.strip() for e in enemies_line.split(",")]
-                        if "Reputation:" in state_section:
-                            rep_line = state_section.split("Reputation:", 1)[1].split("\n", 1)[0].strip()
-                            if rep_line.isdigit():
-                                player_choices["reputation"] = int(rep_line)
-                        if "Resources:" in state_section:
-                            resources_block = state_section.split("Resources:", 1)[1].split("\n\n", 1)[0]
-                            for line in resources_block.splitlines():
-                                if line.strip().startswith("-"):
-                                    parts = line.replace("-", "", 1).strip().split(":")
-                                    if len(parts) >= 2:
-                                        resource = parts[0].strip()
-                                        amount = parts[1].strip()
-                                        if amount.isdigit():
-                                            player_choices["resources"][resource] = int(amount)
-                        if "Consequences:" in state_section:
-                            cons_block = state_section.split("Consequences:", 1)[1].split("\n\n", 1)[0]
-                            for line in cons_block.splitlines():
-                                if line.strip().startswith("-"):
-                                    player_choices["consequences"].append(line.replace("-", "", 1).strip())
             except Exception as e:
                 logging.error(f"Error loading adventure: {e}")
                 print("Error loading adventure. Details logged.")
@@ -894,72 +864,24 @@ def main():
                 continue
 
             if cmd == "/save":
-                try:
-                    # Save conversation with current world state
-                    with open("adventure.txt", "w", encoding="utf-8") as f:
-                        f.write(conversation)
-                        f.write("\n\n### Persistent World State ###\n")
-                        f.write(get_current_state(player_choices))
-                    print("Adventure saved to adventure.txt")
-                except Exception as e:
-                    logging.error(f"Error saving adventure: {e}")
+                if save_adventure(conversation, player_choices):
+                    print("Adventure saved to adventure.json and adventure.txt")
+                else:
                     print("Error saving adventure. Details logged.")
                 continue
 
             if cmd == "/load":
-                if os.path.exists("adventure.txt"):
-                    try:
-                        # Reset player choices before loading
-                        player_choices = {
-                            "allies": [],
-                            "enemies": [],
-                            "discoveries": [],
-                            "reputation": 0,
-                            "resources": {},
-                            "factions": defaultdict(int),
-                            "completed_quests": [],
-                            "active_quests": [],
-                            "world_events": [],
-                            "consequences": []
-                        }
-                        
-                        with open("adventure.txt", "r", encoding="utf-8") as f:
-                            conversation = f.read()
-                        print("Adventure loaded.")
-                        last_dm_pos = conversation.rfind("Dungeon Master:")
-                        if last_dm_pos != -1:
-                            last_ai_reply = conversation[last_dm_pos + len("Dungeon Master:"):].strip()
-                        
-                        # Extract world state from saved file
-                        if "### Persistent World State ###" in conversation:
-                            state_section = conversation.split("### Persistent World State ###")[1]
-                            # Robust parsing
-                            if "Allies:" in state_section:
-                                allies_line = state_section.split("Allies:", 1)[1].split("\n", 1)[0].strip()
-                                if allies_line != "None":
-                                    player_choices["allies"] = [a.strip() for a in allies_line.split(",")]
-                            if "Enemies:" in state_section:
-                                enemies_line = state_section.split("Enemies:", 1)[1].split("\n", 1)[0].strip()
-                                if enemies_line != "None":
-                                    player_choices["enemies"] = [e.strip() for e in enemies_line.split(",")]
-                            if "Resources:" in state_section:
-                                resources_block = state_section.split("Resources:", 1)[1].split("\n\n", 1)[0]
-                                for line in resources_block.splitlines():
-                                    if line.strip().startswith("-"):
-                                        parts = line.replace("-", "", 1).strip().split(":")
-                                        if len(parts) >= 2:
-                                            resource = parts[0].strip()
-                                            amount = parts[1].strip()
-                                            if amount.isdigit():
-                                                player_choices["resources"][resource] = int(amount)
-                            if "Consequences:" in state_section:
-                                cons_block = state_section.split("Consequences:", 1)[1].split("\n\n", 1)[0]
-                                for line in cons_block.splitlines():
-                                    if line.strip().startswith("-"):
-                                        player_choices["consequences"].append(line.replace("-", "", 1).strip())
-                    except Exception as e:
-                        logging.error(f"Error loading adventure: {e}")
-                        print("Error loading adventure. Details logged.")
+                loaded_conversation, loaded_choices = load_adventure()
+                if loaded_conversation is not None:
+                    conversation = loaded_conversation
+                    player_choices.update(loaded_choices)
+                    print("Adventure loaded from JSON.")
+                    
+                    # Find the last DM response
+                    last_dm_pos = conversation.rfind("Dungeon Master:")
+                    if last_dm_pos != -1:
+                        last_ai_reply = conversation[last_dm_pos + len("Dungeon Master:"):].strip()
+                        print(f"\nDungeon Master: {last_ai_reply}")
                 else:
                     print("No saved adventure found.")
                 continue
@@ -985,20 +907,6 @@ def main():
                         print("Invalid selection. Please try again.")
                 else:
                     print("No installed models found. Using current model.")
-                continue
-
-            if cmd == "/count":
-                try:
-                    arr_input = input("Enter integers separated by spaces: ").strip()
-                    k_input = input("Enter k value: ").strip()
-
-                    arr = list(map(int, arr_input.split()))
-                    k = int(k_input)
-
-                    result = count_subarrays(arr, k)
-                    print(f"Number of subarrays with at most {k} distinct elements: {result}")
-                except Exception as e:
-                    print(f"Error: {e}. Please enter valid integers.")
                 continue
 
             # Format user input as action

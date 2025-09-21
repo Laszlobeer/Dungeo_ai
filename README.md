@@ -74,15 +74,6 @@ pip requests sounddevice numpy soundfile
 python main.py
 ```
 
-### 🎭 Alternate Modes
-
-| Script           | Description                                                             |
-| ---------------- | ----------------------------------------------------------------------- |
-| `main.py`        | The default AI dungeon adventure experience                             |
-| `funnymain.py`   | A humorous and quirky version of the game                               |
-| `seriousmain.py` | A more immersive and serious roleplay with advanced class/ability logic |
-
-> ✨ Use `funnymain.py` if you're looking for a laugh, or try `seriousmain.py` if you want a classic RPG-style experience with deeper presence, class systems, and improved logic!
 
 ---
 

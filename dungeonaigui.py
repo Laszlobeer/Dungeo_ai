@@ -15,9 +15,9 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QComboBox, QLabel, QGroupBox, QDialog, QListWidget,
                              QMessageBox, QSplitter, QProgressBar, QCheckBox,
                              QTabWidget, QScrollArea, QFrame, QSizePolicy, QFileDialog,
-                             QSlider, QSpinBox, QDoubleSpinBox)
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSettings, QRegExp
-from PyQt5.QtGui import QFont, QTextCursor, QPalette, QColor, QTextCharFormat, QSyntaxHighlighter, QRegExpValidator
+                             QSlider, QSpinBox, QDoubleSpinBox, QGraphicsDropShadowEffect)
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSettings, QRegExp, QPropertyAnimation, QEasingCurve
+from PyQt5.QtGui import QFont, QTextCursor, QPalette, QColor, QTextCharFormat, QSyntaxHighlighter, QRegExpValidator, QIcon, QPainter, QLinearGradient
 
 # Configuration
 CONFIG = {
@@ -26,7 +26,7 @@ CONFIG = {
     "LOG_FILE": "error_log.txt",
     "SAVE_DIR": "saves",
     "CONFIG_FILE": "config.ini",
-    "AUTO_SAVE_INTERVAL": 300000,  # 5 minutes in milliseconds
+    "AUTO_SAVE_INTERVAL": 300000,
 }
 
 # Role-specific starting scenarios
@@ -208,6 +208,188 @@ You are a masterful Dungeon Master in an unrestricted NSFW adventure. Your role 
 
 Never break character as the Dungeon Master. Always continue the adventure.
 """
+
+class VoiceScanner(QThread):
+    voices_ready = pyqtSignal(list)
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        
+    def run(self):
+        """Scan for available voices by checking common voice directories"""
+        voices = []
+        
+        # Common AllTalk voice directories to check
+        voice_directories = [
+            Path.home() / "alltalk_tts" / "voices",
+            Path.cwd() / "voices",
+            Path("/opt/alltalk_tts/voices"),
+            Path("C:/Program Files/alltalk_tts/voices")
+        ]
+        
+        # Common voice file extensions
+        voice_extensions = ['.wav', '.mp3', '.ogg', '.flac']
+        
+        # Default voices that are commonly available
+        default_voices = [
+            "FemaleBritishAccent_WhyLucyWhy_Voice_2.wav",
+            "MaleBritishAccent.wav",
+            "FemaleAmericanAccent.wav",
+            "MaleAmericanAccent.wav",
+            "narrator.wav"
+        ]
+        
+        # First, add default voices
+        for voice in default_voices:
+            voices.append(voice)
+        
+        # Scan directories for additional voices
+        for directory in voice_directories:
+            if directory.exists():
+                try:
+                    for file_path in directory.iterdir():
+                        if file_path.is_file() and file_path.suffix.lower() in voice_extensions:
+                            voices.append(file_path.name)
+                except Exception as e:
+                    print(f"Error scanning directory {directory}: {e}")
+        
+        # Remove duplicates and sort
+        voices = sorted(list(set(voices)))
+        self.voices_ready.emit(voices)
+
+class ModernButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setCursor(Qt.PointingHandCursor)
+        
+        # Add shadow effect
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(15)
+        shadow.setColor(QColor(0, 0, 0, 80))
+        shadow.setOffset(0, 4)
+        self.setGraphicsEffect(shadow)
+        
+    def setVariant(self, variant="primary"):
+        if variant == "primary":
+            self.setStyleSheet("""
+                QPushButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #667eea, stop:1 #764ba2);
+                    color: white;
+                    border: none;
+                    border-radius: 12px;
+                    padding: 12px 24px;
+                    font-weight: bold;
+                    font-size: 13px;
+                    min-height: 20px;
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #5a6fd8, stop:1 #6a4190);
+                }
+                QPushButton:pressed {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #4c5bc6, stop:1 #58367e);
+                }
+                QPushButton:disabled {
+                    background: #cccccc;
+                    color: #666666;
+                }
+            """)
+        elif variant == "secondary":
+            self.setStyleSheet("""
+                QPushButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #f093fb, stop:1 #f5576c);
+                    color: white;
+                    border: none;
+                    border-radius: 12px;
+                    padding: 10px 20px;
+                    font-weight: bold;
+                    font-size: 12px;
+                    min-height: 18px;
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #e685f0, stop:1 #e34b5f);
+                }
+                QPushButton:pressed {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #dc77e5, stop:1 #d13f52);
+                }
+            """)
+        elif variant == "danger":
+            self.setStyleSheet("""
+                QPushButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #ff6b6b, stop:1 #ee5a52);
+                    color: white;
+                    border: none;
+                    border-radius: 12px;
+                    padding: 10px 20px;
+                    font-weight: bold;
+                    font-size: 12px;
+                    min-height: 18px;
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #ff5252, stop:1 #e04a42);
+                }
+                QPushButton:pressed {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #ff3838, stop:1 #d23a32);
+                }
+            """)
+
+class ModernGroupBox(QGroupBox):
+    def __init__(self, title, parent=None):
+        super().__init__(title, parent)
+        self.setStyleSheet("""
+            QGroupBox {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(255,255,255,0.1), stop:1 rgba(255,255,255,0.05));
+                border: 1px solid rgba(255,255,255,0.2);
+                border-radius: 15px;
+                margin-top: 10px;
+                padding-top: 15px;
+                font-weight: bold;
+                color: white;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 15px;
+                padding: 0 8px 0 8px;
+                color: #a0a0ff;
+                font-weight: bold;
+                font-size: 13px;
+            }
+        """)
+        
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QColor(0, 0, 0, 60))
+        shadow.setOffset(0, 6)
+        self.setGraphicsEffect(shadow)
+
+class ModernProgressBar(QProgressBar):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setStyleSheet("""
+            QProgressBar {
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 10px;
+                text-align: center;
+                color: white;
+                font-weight: bold;
+                background: rgba(0,0,0,0.3);
+                height: 20px;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #667eea, stop:1 #764ba2);
+                border-radius: 8px;
+            }
+        """)
 
 class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
@@ -404,34 +586,178 @@ class TTSWorker(QThread):
         except Exception as e:
             self.error_occurred.emit(f"Unexpected error in speak function: {str(e)}")
 
-class EnhancedSetupDialog(QDialog):
+class ModernSetupDialog(QDialog):
     def __init__(self, settings, parent=None):
         super().__init__(parent)
         self.settings = settings
-        self.setWindowTitle("Adventure Setup")
+        self.setWindowTitle("🎮 Adventure Setup - Choose Your Destiny")
         self.setModal(True)
-        self.setMinimumWidth(650)
-        self.setMinimumHeight(550)
+        self.setMinimumWidth(800)
+        self.setMinimumHeight(700)
+        
+        # Voice scanner
+        self.voice_scanner = VoiceScanner()
+        self.voice_scanner.voices_ready.connect(self.on_voices_ready)
         
         self.init_ui()
         self.load_settings()
         
+        # Start voice scanning
+        self.voice_scanner.start()
+        
     def init_ui(self):
         layout = QVBoxLayout()
+        layout.setSpacing(20)
+        layout.setContentsMargins(30, 30, 30, 30)
+        
+        # Apply dark theme
+        self.setStyleSheet("""
+            QDialog {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #1a1a2e, stop:0.5 #16213e, stop:1 #0f3460);
+                color: white;
+                font-family: 'Segoe UI', Arial, sans-serif;
+            }
+            QLabel {
+                color: #e0e0e0;
+                font-size: 12px;
+            }
+            QLabel#title {
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+                qproperty-alignment: AlignCenter;
+            }
+            QLabel#subtitle {
+                color: #a0a0ff;
+                font-size: 14px;
+                qproperty-alignment: AlignCenter;
+            }
+            QComboBox {
+                background: rgba(255,255,255,0.1);
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 8px;
+                padding: 10px;
+                color: white;
+                font-size: 12px;
+                min-height: 20px;
+            }
+            QComboBox:focus {
+                border: 2px solid #667eea;
+            }
+            QComboBox QAbstractItemView {
+                background: #2d3748;
+                border: 1px solid #4a5568;
+                color: white;
+                selection-background-color: #667eea;
+            }
+            QLineEdit {
+                background: rgba(255,255,255,0.1);
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 8px;
+                padding: 12px;
+                color: white;
+                font-size: 13px;
+                min-height: 25px;
+            }
+            QLineEdit:focus {
+                border: 2px solid #667eea;
+            }
+            QSpinBox {
+                background: rgba(255,255,255,0.1);
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 8px;
+                padding: 8px;
+                color: white;
+                min-height: 20px;
+            }
+            QCheckBox {
+                color: white;
+                spacing: 8px;
+            }
+            QCheckBox::indicator {
+                width: 16px;
+                height: 16px;
+                border: 2px solid rgba(255,255,255,0.5);
+                border-radius: 4px;
+                background: rgba(255,255,255,0.1);
+            }
+            QCheckBox::indicator:checked {
+                background: #667eea;
+                border: 2px solid #667eea;
+            }
+            QSlider::groove:horizontal {
+                border: 1px solid rgba(255,255,255,0.3);
+                height: 6px;
+                background: rgba(255,255,255,0.1);
+                border-radius: 3px;
+            }
+            QSlider::handle:horizontal {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #667eea, stop:1 #764ba2);
+                border: 2px solid rgba(255,255,255,0.8);
+                width: 18px;
+                margin: -7px 0;
+                border-radius: 9px;
+            }
+            QTabWidget::pane {
+                border: 1px solid rgba(255,255,255,0.2);
+                border-radius: 10px;
+                background: rgba(255,255,255,0.05);
+            }
+            QTabBar::tab {
+                background: rgba(255,255,255,0.1);
+                color: #cccccc;
+                padding: 12px 20px;
+                margin: 2px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+            }
+            QTabBar::tab:selected {
+                background: rgba(102, 126, 234, 0.3);
+                color: white;
+                border-bottom: 2px solid #667eea;
+            }
+            QTabBar::tab:hover {
+                background: rgba(255,255,255,0.2);
+            }
+        """)
+        
+        # Header
+        header_label = QLabel("🚀 Adventure Setup")
+        header_label.setObjectName("title")
+        subtitle_label = QLabel("Craft your unique story - choose your world and destiny")
+        subtitle_label.setObjectName("subtitle")
+        
+        layout.addWidget(header_label)
+        layout.addWidget(subtitle_label)
+        layout.addSpacing(20)
+        
         tab_widget = QTabWidget()
+        tab_widget.setStyleSheet("""
+            QTabWidget::pane {
+                border: 1px solid rgba(255,255,255,0.2);
+                border-radius: 15px;
+                background: rgba(255,255,255,0.05);
+                margin-top: 10px;
+            }
+        """)
         
         # Basic Settings Tab
         basic_tab = QWidget()
         basic_layout = QVBoxLayout(basic_tab)
+        basic_layout.setSpacing(25)
+        basic_layout.setContentsMargins(25, 25, 25, 25)
         
         # Model selection
-        model_group = QGroupBox("AI Model")
+        model_group = ModernGroupBox("🤖 AI Model Configuration")
         model_layout = QVBoxLayout()
         self.model_combo = QComboBox()
         self.model_combo.setEditable(True)
         model_layout.addWidget(QLabel("Select AI Model:"))
         model_layout.addWidget(self.model_combo)
-        self.refresh_models_button = QPushButton("Refresh Models")
+        self.refresh_models_button = ModernButton("🔄 Refresh Models")
+        self.refresh_models_button.setVariant("secondary")
         self.refresh_models_button.clicked.connect(self.load_models)
         model_layout.addWidget(self.refresh_models_button)
         model_group.setLayout(model_layout)
@@ -440,7 +766,7 @@ class EnhancedSetupDialog(QDialog):
         # Genre and Role selection
         genre_role_layout = QHBoxLayout()
         
-        genre_group = QGroupBox("Adventure Genre")
+        genre_group = ModernGroupBox("🌍 Adventure Genre")
         genre_layout = QVBoxLayout()
         self.genre_combo = QComboBox()
         self.genre_combo.addItems(ROLE_STARTERS.keys())
@@ -450,13 +776,22 @@ class EnhancedSetupDialog(QDialog):
         
         self.genre_desc = QLabel()
         self.genre_desc.setWordWrap(True)
-        self.genre_desc.setStyleSheet("background-color: #f8f9fa; color: #212529; padding: 8px; border-radius: 4px; border: 1px solid #dee2e6;")
-        self.genre_desc.setMinimumHeight(60)
+        self.genre_desc.setStyleSheet("""
+            background: rgba(255,255,255,0.08); 
+            color: #e0e0e0; 
+            padding: 15px; 
+            border-radius: 10px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 12px;
+            line-height: 1.4;
+        """)
+        self.genre_desc.setMinimumHeight(80)
+        self.genre_desc.setMaximumHeight(100)
         genre_layout.addWidget(self.genre_desc)
         genre_group.setLayout(genre_layout)
         genre_role_layout.addWidget(genre_group)
         
-        role_group = QGroupBox("Character Role")
+        role_group = ModernGroupBox("👤 Character Role")
         role_layout = QVBoxLayout()
         self.role_combo = QComboBox()
         role_layout.addWidget(QLabel("Select Role:"))
@@ -464,8 +799,17 @@ class EnhancedSetupDialog(QDialog):
         
         self.role_desc = QLabel()
         self.role_desc.setWordWrap(True)
-        self.role_desc.setStyleSheet("background-color: #f8f9fa; color: #212529; padding: 8px; border-radius: 4px; border: 1px solid #dee2e6;")
-        self.role_desc.setMinimumHeight(60)
+        self.role_desc.setStyleSheet("""
+            background: rgba(255,255,255,0.08); 
+            color: #e0e0e0; 
+            padding: 15px; 
+            border-radius: 10px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 12px;
+            line-height: 1.4;
+        """)
+        self.role_desc.setMinimumHeight(80)
+        self.role_desc.setMaximumHeight(100)
         role_layout.addWidget(self.role_desc)
         role_group.setLayout(role_layout)
         genre_role_layout.addWidget(role_group)
@@ -473,50 +817,52 @@ class EnhancedSetupDialog(QDialog):
         basic_layout.addLayout(genre_role_layout)
         
         # Character details
-        char_group = QGroupBox("Character Details")
+        char_group = ModernGroupBox("📝 Character Details")
         char_layout = QVBoxLayout()
         self.name_edit = QLineEdit()
+        self.name_edit.setPlaceholderText("Enter your character's name...")
         char_layout.addWidget(QLabel("Character Name:"))
         char_layout.addWidget(self.name_edit)
         char_group.setLayout(char_layout)
         basic_layout.addWidget(char_group)
         
         basic_layout.addStretch()
-        tab_widget.addTab(basic_tab, "Basic Settings")
+        tab_widget.addTab(basic_tab, "🎯 Basic Settings")
         
         # Advanced Settings Tab
         advanced_tab = QWidget()
         advanced_layout = QVBoxLayout(advanced_tab)
+        advanced_layout.setSpacing(25)
+        advanced_layout.setContentsMargins(25, 25, 25, 25)
         
         # TTS Settings
-        tts_group = QGroupBox("Text-to-Speech")
+        tts_group = ModernGroupBox("🔊 Voice Settings")
         tts_layout = QVBoxLayout()
         self.tts_enabled = QCheckBox("Enable Text-to-Speech")
         self.tts_enabled.setChecked(True)
         tts_layout.addWidget(self.tts_enabled)
         
         voice_layout = QHBoxLayout()
-        voice_layout.addWidget(QLabel("Voice:"))
+        voice_layout.addWidget(QLabel("Voice Style:"))
         self.voice_combo = QComboBox()
-        self.voice_combo.addItems([
-            "FemaleBritishAccent_WhyLucyWhy_Voice_2.wav",
-            "MaleBritishAccent.wav",
-            "FemaleAmericanAccent.wav",
-            "MaleAmericanAccent.wav"
-        ])
+        self.voice_combo.addItem("🔍 Scanning for voices...")
+        self.refresh_voices_button = ModernButton("🔄 Refresh Voices")
+        self.refresh_voices_button.setVariant("secondary")
+        self.refresh_voices_button.clicked.connect(self.refresh_voices)
         voice_layout.addWidget(self.voice_combo)
-        voice_layout.addStretch()
+        voice_layout.addWidget(self.refresh_voices_button)
         tts_layout.addLayout(voice_layout)
         tts_group.setLayout(tts_layout)
         advanced_layout.addWidget(tts_group)
         
         # AI Settings
-        ai_group = QGroupBox("AI Settings")
+        ai_group = ModernGroupBox("⚡ AI Behavior")
         ai_layout = QVBoxLayout()
         
         temp_layout = QHBoxLayout()
-        temp_layout.addWidget(QLabel("Temperature:"))
+        temp_layout.addWidget(QLabel("Creativity Level:"))
         self.temp_label = QLabel("0.7")
+        self.temp_label.setStyleSheet("color: #a0a0ff; font-weight: bold;")
         self.temp_slider = QSlider(Qt.Horizontal)
         self.temp_slider.setRange(0, 100)
         self.temp_slider.setValue(70)
@@ -527,10 +873,10 @@ class EnhancedSetupDialog(QDialog):
         temp_layout.addWidget(self.temp_label)
         ai_layout.addLayout(temp_layout)
         
-        ai_layout.addWidget(QLabel("Higher values = more creative, Lower values = more focused"))
+        ai_layout.addWidget(QLabel("Higher = more creative, Lower = more focused"))
         
         max_tokens_layout = QHBoxLayout()
-        max_tokens_layout.addWidget(QLabel("Max Response Length:"))
+        max_tokens_layout.addWidget(QLabel("Response Length:"))
         self.max_tokens_spin = QSpinBox()
         self.max_tokens_spin.setRange(100, 2000)
         self.max_tokens_spin.setValue(512)
@@ -543,15 +889,17 @@ class EnhancedSetupDialog(QDialog):
         advanced_layout.addWidget(ai_group)
         
         advanced_layout.addStretch()
-        tab_widget.addTab(advanced_tab, "Advanced Settings")
+        tab_widget.addTab(advanced_tab, "⚙️ Advanced Settings")
         
         layout.addWidget(tab_widget)
         
         # Buttons
         button_layout = QHBoxLayout()
-        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button = ModernButton("❌ Cancel")
+        self.cancel_button.setVariant("danger")
         self.cancel_button.clicked.connect(self.reject)
-        self.ok_button = QPushButton("Start Adventure")
+        self.ok_button = ModernButton("🚀 Start Adventure!")
+        self.ok_button.setVariant("primary")
         self.ok_button.clicked.connect(self.accept)
         self.ok_button.setDefault(True)
         
@@ -562,113 +910,45 @@ class EnhancedSetupDialog(QDialog):
         
         self.setLayout(layout)
         
-        # Apply light theme to setup dialog
-        self.apply_light_theme()
-        
         # Initialize
         self.genre_changed(self.genre_combo.currentText())
         self.load_models()
-    
-    def apply_light_theme(self):
-        """Apply a light theme to the setup dialog for better readability"""
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #f8f9fa;
-                color: #212529;
-            }
-            QGroupBox {
-                font-weight: bold;
-                border: 2px solid #dee2e6;
-                border-radius: 5px;
-                margin-top: 1em;
-                padding-top: 10px;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px 0 5px;
-                color: #495057;
-            }
-            QLabel {
-                color: #212529;
-            }
-            QComboBox, QLineEdit, QSpinBox {
-                background-color: white;
-                color: #212529;
-                border: 1px solid #ced4da;
-                border-radius: 4px;
-                padding: 5px;
-                min-height: 20px;
-            }
-            QComboBox:focus, QLineEdit:focus {
-                border: 1px solid #80bdff;
-                outline: 0;
-            }
-            QPushButton {
-                background-color: #007bff;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 8px 16px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #0056b3;
-            }
-            QPushButton:pressed {
-                background-color: #004085;
-            }
-            QCheckBox {
-                color: #212529;
-                spacing: 5px;
-            }
-            QCheckBox::indicator {
-                width: 13px;
-                height: 13px;
-            }
-            QCheckBox::indicator:unchecked {
-                border: 1px solid #ced4da;
-                background-color: white;
-                border-radius: 2px;
-            }
-            QCheckBox::indicator:checked {
-                border: 1px solid #007bff;
-                background-color: #007bff;
-                border-radius: 2px;
-            }
-            QSlider::groove:horizontal {
-                border: 1px solid #bbb;
-                background: white;
-                height: 6px;
-                border-radius: 3px;
-            }
-            QSlider::handle:horizontal {
-                background: #007bff;
-                border: 1px solid #007bff;
-                width: 16px;
-                margin: -5px 0;
-                border-radius: 8px;
-            }
-            QTabWidget::pane {
-                border: 1px solid #dee2e6;
-                background-color: white;
-            }
-            QTabBar::tab {
-                background-color: #e9ecef;
-                color: #495057;
-                padding: 8px 16px;
-                border: 1px solid #dee2e6;
-                border-bottom: none;
-                border-top-left-radius: 4px;
-                border-top-right-radius: 4px;
-            }
-            QTabBar::tab:selected {
-                background-color: white;
-                color: #007bff;
-                border-bottom: 1px solid white;
-            }
-        """)
         
+        # Add animations
+        self.setup_animations()
+    
+    def setup_animations(self):
+        # Simple fade-in animation for the dialog
+        self.animation = QPropertyAnimation(self, b"windowOpacity")
+        self.animation.setDuration(300)
+        self.animation.setStartValue(0)
+        self.animation.setEndValue(1)
+        self.animation.setEasingCurve(QEasingCurve.OutCubic)
+        self.animation.start()
+    
+    def on_voices_ready(self, voices):
+        """Update voice combo box with scanned voices"""
+        self.voice_combo.clear()
+        if voices:
+            for voice in voices:
+                # Add emoji based on voice type
+                emoji = "🎭"
+                if "female" in voice.lower():
+                    emoji = "👩"
+                elif "male" in voice.lower():
+                    emoji = "👨"
+                elif "narrator" in voice.lower():
+                    emoji = "📖"
+                self.voice_combo.addItem(f"{emoji} {voice}")
+        else:
+            self.voice_combo.addItem("❌ No voices found")
+    
+    def refresh_voices(self):
+        """Refresh available voices"""
+        self.voice_combo.clear()
+        self.voice_combo.addItem("🔍 Scanning for voices...")
+        self.voice_scanner.start()
+    
     def genre_changed(self, genre):
         self.genre_desc.setText(GENRE_DESCRIPTIONS.get(genre, ""))
         self.role_combo.clear()
@@ -716,18 +996,32 @@ class EnhancedSetupDialog(QDialog):
         self.model_combo.setCurrentText(self.settings.value("model", "llama3:instruct"))
         self.genre_combo.setCurrentText(self.settings.value("genre", "Fantasy"))
         self.tts_enabled.setChecked(self.settings.value("tts_enabled", True, type=bool))
-        self.voice_combo.setCurrentText(self.settings.value("voice", "FemaleBritishAccent_WhyLucyWhy_Voice_2.wav"))
-        self.temp_slider.setValue(self.settings.value("temperature", 70, type=int))
-        self.max_tokens_spin.setValue(self.settings.value("max_tokens", 512, type=int))
+        
+        # Fix for voice setting type conversion
+        voice_value = self.settings.value("voice", 0)
+        try:
+            # Try to convert to int, handle both string and int types
+            if isinstance(voice_value, str):
+                voice_index = int(voice_value)
+            else:
+                voice_index = int(voice_value) if voice_value is not None else 0
+        except (ValueError, TypeError):
+            voice_index = 0
+        
+        # Voice index will be set after voices are loaded
     
     def get_selections(self):
+        # Extract voice filename from the combo box display text
+        voice_text = self.voice_combo.currentText()
+        voice_file = voice_text.split(" ", 1)[-1] if " " in voice_text else voice_text
+        
         return {
             "model": self.model_combo.currentText(),
             "genre": self.genre_combo.currentText(),
             "role": self.role_combo.currentText(),
             "character_name": self.name_edit.text(),
             "tts_enabled": self.tts_enabled.isChecked(),
-            "voice": self.voice_combo.currentText(),
+            "voice": voice_file,
             "temperature": self.temp_slider.value() / 100.0,
             "max_tokens": self.max_tokens_spin.value()
         }
@@ -736,8 +1030,8 @@ class AdventureGameGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.settings = QSettings(CONFIG["CONFIG_FILE"], QSettings.IniFormat)
-        self.setWindowTitle("Enhanced Text Adventure Game")
-        self.setGeometry(100, 100, 1000, 800)
+        self.setWindowTitle("✨ AI Dungeon Master - Interactive Storytelling")
+        self.setGeometry(100, 100, 1200, 900)
         
         self.adventure_started = False
         self.last_ai_reply = ""
@@ -767,45 +1061,154 @@ class AdventureGameGUI(QMainWindow):
         self.setCentralWidget(central_widget)
         
         layout = QVBoxLayout(central_widget)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Header
+        header_widget = QWidget()
+        header_layout = QHBoxLayout(header_widget)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        
+        title_label = QLabel("🎭 AI Dungeon Master")
+        title_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 28px;
+                font-weight: bold;
+                font-family: 'Segoe UI', Arial, sans-serif;
+            }
+        """)
+        
+        subtitle_label = QLabel("Your interactive storytelling companion")
+        subtitle_label.setStyleSheet("""
+            QLabel {
+                color: #a0a0ff;
+                font-size: 14px;
+                font-style: italic;
+            }
+        """)
+        
+        header_layout.addWidget(title_label)
+        header_layout.addStretch()
+        header_layout.addWidget(subtitle_label)
+        
+        layout.addWidget(header_widget)
         
         # Game text area with syntax highlighting
         self.text_area = QTextEdit()
         self.text_area.setReadOnly(True)
-        self.text_area.setFont(QFont("Courier", 11))  # Larger font for better readability
+        self.text_area.setFont(QFont("Segoe UI", 12))
+        self.text_area.setStyleSheet("""
+            QTextEdit {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 rgba(30, 30, 46, 0.9), stop:1 rgba(25, 25, 35, 0.9));
+                color: #e0e0e0;
+                border: 2px solid rgba(255,255,255,0.1);
+                border-radius: 15px;
+                padding: 20px;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 12pt;
+                line-height: 1.5;
+                selection-background-color: rgba(102, 126, 234, 0.3);
+            }
+        """)
         self.highlighter = SyntaxHighlighter(self.text_area.document())
         
+        # Add shadow to text area
+        text_shadow = QGraphicsDropShadowEffect()
+        text_shadow.setBlurRadius(25)
+        text_shadow.setColor(QColor(0, 0, 0, 80))
+        text_shadow.setOffset(0, 8)
+        self.text_area.setGraphicsEffect(text_shadow)
+        
+        # Progress bar
+        self.progress_bar = ModernProgressBar()
+        self.progress_bar.setVisible(False)
+        
+        # Status bar
+        self.status_label = QLabel("🟢 Ready to begin your adventure")
+        self.status_label.setStyleSheet("""
+            QLabel {
+                background: rgba(255,255,255,0.1);
+                color: #a0a0ff;
+                padding: 8px 15px;
+                border-radius: 10px;
+                border: 1px solid rgba(255,255,255,0.2);
+                font-size: 11px;
+                font-weight: bold;
+            }
+        """)
+        
         # Input area
-        input_layout = QHBoxLayout()
+        input_widget = QWidget()
+        input_layout = QHBoxLayout(input_widget)
+        input_layout.setContentsMargins(0, 0, 0, 0)
+        
         self.input_field = QLineEdit()
+        self.input_field.setPlaceholderText("💭 Describe your action or type /help for commands...")
         self.input_field.returnPressed.connect(self.send_input)
-        self.input_field.setPlaceholderText("Type your action or /help for commands...")
-        self.send_button = QPushButton("Send")
+        self.input_field.setStyleSheet("""
+            QLineEdit {
+                background: rgba(255,255,255,0.1);
+                color: white;
+                border: 2px solid rgba(255,255,255,0.3);
+                border-radius: 12px;
+                padding: 15px;
+                font-size: 13px;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                min-height: 25px;
+            }
+            QLineEdit:focus {
+                border: 2px solid #667eea;
+                background: rgba(255,255,255,0.15);
+            }
+            QLineEdit:disabled {
+                background: rgba(255,255,255,0.05);
+                color: #888888;
+            }
+        """)
+        
+        input_shadow = QGraphicsDropShadowEffect()
+        input_shadow.setBlurRadius(15)
+        input_shadow.setColor(QColor(0, 0, 0, 60))
+        input_shadow.setOffset(0, 4)
+        self.input_field.setGraphicsEffect(input_shadow)
+        
+        self.send_button = ModernButton("🚀 Send")
+        self.send_button.setVariant("primary")
         self.send_button.clicked.connect(self.send_input)
         
         input_layout.addWidget(self.input_field)
         input_layout.addWidget(self.send_button)
         
-        # Progress bar
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
+        # Control buttons
+        button_widget = QWidget()
+        button_layout = QHBoxLayout(button_widget)
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        button_layout.setSpacing(10)
         
-        # Status bar
-        self.status_label = QLabel("Ready")
-        self.status_label.setStyleSheet("padding: 4px; background-color: #e9ecef; color: #495057; border-radius: 3px;")
-        
-        # Buttons
-        button_layout = QHBoxLayout()
-        self.help_button = QPushButton("Help")
+        self.help_button = ModernButton("❓ Help")
+        self.help_button.setVariant("secondary")
         self.help_button.clicked.connect(self.show_help)
-        self.redo_button = QPushButton("Redo")
+        
+        self.redo_button = ModernButton("🔁 Redo")
+        self.redo_button.setVariant("secondary")
         self.redo_button.clicked.connect(self.redo_last)
-        self.save_button = QPushButton("Save")
+        
+        self.save_button = ModernButton("💾 Save")
+        self.save_button.setVariant("secondary")
         self.save_button.clicked.connect(self.save_adventure)
-        self.load_button = QPushButton("Load")
+        
+        self.load_button = ModernButton("📂 Load")
+        self.load_button.setVariant("secondary")
         self.load_button.clicked.connect(self.load_adventure)
-        self.settings_button = QPushButton("Settings")
+        
+        self.settings_button = ModernButton("⚙️ Settings")
+        self.settings_button.setVariant("secondary")
         self.settings_button.clicked.connect(self.show_settings)
-        self.exit_button = QPushButton("Exit")
+        
+        self.exit_button = ModernButton("⏹️ Exit")
+        self.exit_button.setVariant("danger")
         self.exit_button.clicked.connect(self.exit_game)
         
         button_layout.addWidget(self.help_button)
@@ -815,142 +1218,60 @@ class AdventureGameGUI(QMainWindow):
         button_layout.addWidget(self.settings_button)
         button_layout.addWidget(self.exit_button)
         
-        layout.addWidget(self.text_area)
+        layout.addWidget(self.text_area, 1)
         layout.addWidget(self.progress_bar)
         layout.addWidget(self.status_label)
-        layout.addLayout(input_layout)
-        layout.addLayout(button_layout)
+        layout.addWidget(input_widget)
+        layout.addWidget(button_widget)
         
-        self.apply_improved_theme()
+        self.apply_dark_theme()
         
-    def apply_improved_theme(self):
-        """Apply a high-contrast theme for better readability"""
+    def apply_dark_theme(self):
+        """Apply comprehensive dark theme to the entire application"""
+        dark_palette = QPalette()
+        dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.WindowText, Qt.white)
+        dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
+        dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ToolTipBase, Qt.white)
+        dark_palette.setColor(QPalette.ToolTipText, Qt.white)
+        dark_palette.setColor(QPalette.Text, Qt.white)
+        dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ButtonText, Qt.white)
+        dark_palette.setColor(QPalette.BrightText, Qt.red)
+        dark_palette.setColor(QPalette.Link, QColor(42, 130, 218))
+        dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+        dark_palette.setColor(QPalette.HighlightedText, Qt.black)
+        
+        self.setPalette(dark_palette)
+        
+        # Additional dark theme styling
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #2b2b2b;
-                color: #e0e0e0;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #1a1a2e, stop:0.5 #16213e, stop:1 #0f3460);
             }
-            QTextEdit {
-                background-color: #1e1e1e;
-                color: #ffffff;
-                border: 2px solid #444;
-                border-radius: 5px;
-                padding: 10px;
-                font-family: 'Segoe UI', Arial, sans-serif;
-                font-size: 11pt;
-                selection-background-color: #3a3a3a;
-            }
-            QLineEdit {
-                background-color: #ffffff;
-                color: #000000;
-                border: 2px solid #666;
-                border-radius: 5px;
-                padding: 8px;
-                font-size: 11pt;
-                min-height: 25px;
-            }
-            QLineEdit:focus {
-                border: 2px solid #0078d7;
-            }
-            QLineEdit:disabled {
-                background-color: #cccccc;
-                color: #666666;
-            }
-            QPushButton {
-                background-color: #0078d7;
+            QMessageBox {
+                background: #2d2d2d;
                 color: white;
-                border: none;
-                border-radius: 5px;
-                padding: 8px 16px;
-                font-weight: bold;
-                font-size: 10pt;
-                min-height: 30px;
             }
-            QPushButton:hover {
-                background-color: #106ebe;
-            }
-            QPushButton:pressed {
-                background-color: #005a9e;
-            }
-            QPushButton:disabled {
-                background-color: #666666;
-                color: #999999;
-            }
-            QProgressBar {
-                border: 1px solid #666;
-                border-radius: 3px;
-                text-align: center;
+            QMessageBox QLabel {
                 color: white;
-                font-weight: bold;
             }
-            QProgressBar::chunk {
-                background-color: #0078d7;
-                width: 20px;
+            QMessageBox QPushButton {
+                background: #404040;
+                color: white;
+                border: 1px solid #555;
+                padding: 5px 15px;
+                border-radius: 4px;
             }
-            QLabel {
-                color: #ffffff;
-                font-size: 10pt;
-            }
-            QComboBox {
-                background-color: white;
-                color: black;
-                border: 1px solid #666;
-                border-radius: 3px;
-                padding: 5px;
-                min-width: 100px;
-            }
-            QComboBox:focus {
-                border: 1px solid #0078d7;
-            }
-            QGroupBox {
-                color: #ffffff;
-                border: 2px solid #666;
-                border-radius: 5px;
-                margin-top: 10px;
-                padding-top: 10px;
-                font-weight: bold;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px 0 5px;
-                color: #ffffff;
-            }
-            QCheckBox {
-                color: #ffffff;
-                spacing: 5px;
-            }
-            QCheckBox::indicator {
-                width: 15px;
-                height: 15px;
-            }
-            QCheckBox::indicator:unchecked {
-                border: 2px solid #666;
-                background-color: #333;
-                border-radius: 3px;
-            }
-            QCheckBox::indicator:checked {
-                border: 2px solid #0078d7;
-                background-color: #0078d7;
-                border-radius: 3px;
-            }
-            QSlider::groove:horizontal {
-                border: 1px solid #666;
-                background: #444;
-                height: 6px;
-                border-radius: 3px;
-            }
-            QSlider::handle:horizontal {
-                background: #0078d7;
-                border: 2px solid #005a9e;
-                width: 18px;
-                margin: -7px 0;
-                border-radius: 9px;
+            QMessageBox QPushButton:hover {
+                background: #505050;
             }
         """)
     
     def show_setup_dialog(self):
-        dialog = EnhancedSetupDialog(self.settings, self)
+        dialog = ModernSetupDialog(self.settings, self)
         if dialog.exec_() == QDialog.Accepted:
             selections = dialog.get_selections()
             self.apply_settings(selections)
@@ -959,11 +1280,11 @@ class AdventureGameGUI(QMainWindow):
             self.close()
     
     def show_settings(self):
-        dialog = EnhancedSetupDialog(self.settings, self)
+        dialog = ModernSetupDialog(self.settings, self)
         if dialog.exec_() == QDialog.Accepted:
             selections = dialog.get_selections()
             self.apply_settings(selections)
-            self.append_text("Settings updated.\n")
+            self.append_text("🎛️ <font color='#FFB74D'>Settings updated.</font><br>")
     
     def apply_settings(self, selections):
         self.ollama_model = selections["model"]
@@ -981,7 +1302,10 @@ class AdventureGameGUI(QMainWindow):
         self.settings.setValue("role", self.selected_role)
         self.settings.setValue("character_name", self.character_name)
         self.settings.setValue("tts_enabled", self.tts_enabled)
+        
+        # Save voice as string filename
         self.settings.setValue("voice", self.selected_voice)
+        
         self.settings.setValue("temperature", int(self.temperature * 100))
         self.settings.setValue("max_tokens", self.max_tokens)
     
@@ -993,7 +1317,7 @@ class AdventureGameGUI(QMainWindow):
         auto_save_path = Path(CONFIG["SAVE_DIR"]) / "autosave.txt"
         if auto_save_path.exists():
             reply = QMessageBox.question(self, "Load Auto-Save", 
-                                       "An auto-saved adventure exists. Load it?",
+                                       "📂 An auto-saved adventure exists. Load it?",
                                        QMessageBox.Yes | QMessageBox.No)
             if reply == QMessageBox.Yes:
                 if self.load_save_file(auto_save_path):
@@ -1001,9 +1325,9 @@ class AdventureGameGUI(QMainWindow):
         
         # Start new adventure
         starter = ROLE_STARTERS[self.selected_genre][self.selected_role]
-        self.append_text(f"<font color='#FFA500'><b>--- Adventure Start: {self.character_name} the {self.selected_role} ---</b></font><br>")
-        self.append_text(f"<b>Starting scenario:</b> {starter}<br>")
-        self.append_text("<font color='#FFA500'>Type '/help' for commands.</font><br><br>")
+        self.append_text(f"<font color='#FFA500'><b>🌟 Adventure Start: {self.character_name} the {self.selected_role} 🌟</b></font><br><br>")
+        self.append_text(f"<b>🎬 Starting scenario:</b> {starter}<br><br>")
+        self.append_text("<font color='#4FC3F7'>💡 Type <b>/help</b> for available commands</font><br><br>")
         
         initial_context = (
             f"### Adventure Setting ###\n"
@@ -1035,7 +1359,7 @@ class AdventureGameGUI(QMainWindow):
         
         # Process player action
         self.last_player_input = user_input
-        self.append_text(f"<font color='#4FC3F7'><b>You:</b> {user_input}</font><br>")
+        self.append_text(f"<font color='#4FC3F7'><b>🎭 You:</b> {user_input}</font><br>")
         
         formatted_input = f"Player: {user_input}"
         prompt = (
@@ -1064,23 +1388,25 @@ class AdventureGameGUI(QMainWindow):
             self.show_settings()
         elif cmd == '/clear':
             self.text_area.clear()
-            self.append_text("<font color='#FFA500'>Chat cleared.</font><br>")
+            self.append_text("🧹 <font color='#FFA500'>Chat cleared.</font><br>")
         elif cmd.startswith('/model'):
             parts = cmd.split()
             if len(parts) > 1:
                 self.ollama_model = parts[1]
-                self.append_text(f"<font color='#FFA500'>Model changed to: {self.ollama_model}</font><br>")
+                self.append_text(f"🔄 <font color='#FFA500'>Model changed to: {self.ollama_model}</font><br>")
             else:
-                QMessageBox.information(self, "Current Model", f"Using model: {self.ollama_model}")
+                QMessageBox.information(self, "Current Model", f"🤖 Using model: {self.ollama_model}")
         elif cmd == '/tts':
             self.tts_enabled = not self.tts_enabled
             status = "enabled" if self.tts_enabled else "disabled"
-            self.append_text(f"<font color='#FFA500'>Text-to-speech {status}.</font><br>")
+            self.append_text(f"🔊 <font color='#FFA500'>Text-to-speech {status}.</font><br>")
+        elif cmd == '/voices':
+            self.append_text(f"🔊 <font color='#FFA500'>Current voice: {self.selected_voice}</font><br>")
         else:
-            self.append_text(f"<font color='#FF6B6B'>Unknown command: {command}</font><br>")
+            self.append_text(f"❌ <font color='#FF6B6B'>Unknown command: {command}</font><br>")
     
     def get_ai_response(self, prompt):
-        self.status_label.setText("Generating response...")
+        self.status_label.setText("🤔 Generating response...")
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
         self.set_ui_enabled(False)
@@ -1094,9 +1420,9 @@ class AdventureGameGUI(QMainWindow):
     def handle_ai_response(self, response):
         self.progress_bar.setVisible(False)
         self.set_ui_enabled(True)
-        self.status_label.setText("Ready")
+        self.status_label.setText("🟢 Ready for your next action")
         
-        self.append_text(f"<font color='#81C784'><b>Dungeon Master:</b> {response}</font><br><br>")
+        self.append_text(f"<font color='#81C784'><b>🎮 Dungeon Master:</b> {response}</font><br><br>")
         self.conversation += f"\nDungeon Master: {response}"
         self.last_ai_reply = response
         self.speak_text(response)
@@ -1107,9 +1433,9 @@ class AdventureGameGUI(QMainWindow):
     def handle_ai_error(self, error_msg):
         self.progress_bar.setVisible(False)
         self.set_ui_enabled(True)
-        self.status_label.setText("Error")
+        self.status_label.setText("🔴 Error occurred")
         self.log_error(f"AI Error: {error_msg}")
-        QMessageBox.warning(self, "AI Error", f"An error occurred: {error_msg}")
+        QMessageBox.warning(self, "AI Error", f"❌ An error occurred: {error_msg}")
     
     def speak_text(self, text):
         if not self.tts_enabled:
@@ -1152,7 +1478,7 @@ class AdventureGameGUI(QMainWindow):
     
     def show_help(self):
         help_text = """
-<h3>Available Commands:</h3>
+<h3>🎮 Available Commands:</h3>
 <ul>
 <li><b>/? or /help</b> - Show this help message</li>
 <li><b>/redo</b> - Repeat last AI response</li>
@@ -1162,12 +1488,14 @@ class AdventureGameGUI(QMainWindow):
 <li><b>/clear</b> - Clear chat</li>
 <li><b>/model [name]</b> - Change AI model</li>
 <li><b>/tts</b> - Toggle text-to-speech</li>
+<li><b>/voices</b> - Show current voice</li>
 <li><b>/exit</b> - Exit game</li>
 </ul>
-<h3>Gameplay:</h3>
-<p>Describe your actions naturally. The AI will respond with consequences and story developments.</p>
+<h3>🎯 Gameplay Tips:</h3>
+<p>Describe your actions naturally. The AI will respond with consequences and story developments.<br>
+Be creative and immersive in your descriptions!</p>
 """
-        QMessageBox.information(self, "Help", help_text)
+        QMessageBox.information(self, "Help Guide", help_text)
     
     def redo_last(self):
         if self.last_ai_reply and self.last_player_input:
@@ -1182,7 +1510,7 @@ class AdventureGameGUI(QMainWindow):
             )
             self.get_ai_response(full_prompt)
         else:
-            QMessageBox.warning(self, "Redo", "Nothing to redo.")
+            QMessageBox.warning(self, "Redo", "🔄 Nothing to redo.")
     
     def save_adventure(self):
         try:
@@ -1192,17 +1520,17 @@ class AdventureGameGUI(QMainWindow):
             with open(save_path, "w", encoding="utf-8") as f:
                 f.write(self.conversation)
             
-            self.append_text(f"<font color='#FFA500'>Adventure saved to: {save_path}</font><br>")
+            self.append_text(f"💾 <font color='#FFA500'>Adventure saved to: {save_path}</font><br>")
         except Exception as e:
             error_msg = f"Error saving adventure: {str(e)}"
             self.log_error(error_msg)
-            QMessageBox.warning(self, "Save Error", "Error saving adventure.")
+            QMessageBox.warning(self, "Save Error", "❌ Error saving adventure.")
     
     def load_adventure(self):
         try:
             save_files = list(Path(CONFIG["SAVE_DIR"]).glob("adventure_*.txt"))
             if not save_files:
-                QMessageBox.warning(self, "Load Error", "No saved adventures found.")
+                QMessageBox.warning(self, "Load Error", "📂 No saved adventures found.")
                 return
             
             file_path, _ = QFileDialog.getOpenFileName(
@@ -1210,12 +1538,12 @@ class AdventureGameGUI(QMainWindow):
             )
             
             if file_path and self.load_save_file(Path(file_path)):
-                self.append_text("<font color='#FFA500'>Adventure loaded successfully.</font><br>")
+                self.append_text("📂 <font color='#FFA500'>Adventure loaded successfully.</font><br>")
                 
         except Exception as e:
             error_msg = f"Error loading adventure: {str(e)}"
             self.log_error(error_msg)
-            QMessageBox.warning(self, "Load Error", "Error loading adventure.")
+            QMessageBox.warning(self, "Load Error", "❌ Error loading adventure.")
     
     def load_save_file(self, file_path):
         try:
@@ -1250,8 +1578,8 @@ class AdventureGameGUI(QMainWindow):
             self.log_error(f"Auto-save error: {str(e)}")
     
     def exit_game(self):
-        reply = QMessageBox.question(self, "Exit", 
-                                   "Are you sure you want to exit?",
+        reply = QMessageBox.question(self, "Exit Adventure", 
+                                   "🚪 Are you sure you want to exit your adventure?",
                                    QMessageBox.Yes | QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.close()
@@ -1271,9 +1599,13 @@ class AdventureGameGUI(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    app.setApplicationName("Enhanced Text Adventure")
-    app.setApplicationVersion("2.0")
-    app.setStyle('Fusion')  # Consistent style across platforms
+    app.setApplicationName("AI Dungeon Master")
+    app.setApplicationVersion("3.0")
+    app.setStyle('Fusion')
+    
+    # Set modern font
+    font = QFont("Segoe UI", 10)
+    app.setFont(font)
     
     # Create necessary directories
     Path(CONFIG["SAVE_DIR"]).mkdir(exist_ok=True)

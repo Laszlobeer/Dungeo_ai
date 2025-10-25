@@ -29,6 +29,145 @@ CONFIG = {
     "AUTO_SAVE_INTERVAL": 300000,
 }
 
+# Theme configurations
+THEMES = {
+    "Deep Space": {
+        "primary": "#667eea",
+        "secondary": "#764ba2", 
+        "accent": "#f093fb",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0c0c2e, stop:0.5 #1a1a3e, stop:1 #2d1b69)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(20, 20, 46, 0.9), stop:1 rgba(30, 25, 65, 0.9))",
+        "card_bg": "rgba(255,255,255,0.08)",
+        "border": "rgba(102, 126, 234, 0.4)"
+    },
+    "Cyber Neon": {
+        "primary": "#00f5ff",
+        "secondary": "#ff00ff",
+        "accent": "#00ff87", 
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0a0a12, stop:0.5 #1a1a2e, stop:1 #16213e)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(10, 15, 35, 0.9), stop:1 rgba(20, 25, 55, 0.9))",
+        "card_bg": "rgba(0, 245, 255, 0.1)",
+        "border": "rgba(0, 245, 255, 0.3)"
+    },
+    "Forest Mystic": {
+        "primary": "#4ecdc4",
+        "secondary": "#44a08d",
+        "accent": "#ff6b6b",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0f2b1d, stop:0.5 #1a3d2c, stop:1 #2d5a4a)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(20, 40, 30, 0.9), stop:1 rgba(40, 70, 55, 0.9))",
+        "card_bg": "rgba(78, 205, 196, 0.1)",
+        "border": "rgba(78, 205, 196, 0.4)"
+    },
+    "Crimson Night": {
+        "primary": "#ff6b6b",
+        "secondary": "#c6426e", 
+        "accent": "#ffd93d",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #2c0b1a, stop:0.5 #4a142d, stop:1 #6d1f41)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(50, 15, 25, 0.9), stop:1 rgba(80, 25, 45, 0.9))",
+        "card_bg": "rgba(255, 107, 107, 0.1)",
+        "border": "rgba(255, 107, 107, 0.4)"
+    },
+    "Golden Sands": {
+        "primary": "#f7b733",
+        "secondary": "#fc4a1a",
+        "accent": "#4abdac",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #2c1a0b, stop:0.5 #4a2e14, stop:1 #6d451f)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(50, 35, 15, 0.9), stop:1 rgba(80, 55, 25, 0.9))",
+        "card_bg": "rgba(247, 183, 51, 0.1)",
+        "border": "rgba(247, 183, 51, 0.4)"
+    },
+    "Arctic Frost": {
+        "primary": "#74ebd5",
+        "secondary": "#9face6",
+        "accent": "#ff7e5f",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0b2c2c, stop:0.5 #144a4a, stop:1 #1f6d6d)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(15, 40, 40, 0.9), stop:1 rgba(25, 70, 70, 0.9))",
+        "card_bg": "rgba(116, 235, 213, 0.1)",
+        "border": "rgba(116, 235, 213, 0.4)"
+    },
+    "Purple Dream": {
+        "primary": "#da22ff",
+        "secondary": "#9733ee",
+        "accent": "#38ef7d",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #1a0b2c, stop:0.5 #2e144a, stop:1 #451f6d)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(30, 15, 50, 0.9), stop:1 rgba(55, 25, 85, 0.9))",
+        "card_bg": "rgba(218, 34, 255, 0.1)",
+        "border": "rgba(218, 34, 255, 0.4)"
+    },
+    "Ocean Depth": {
+        "primary": "#2193b0",
+        "secondary": "#6dd5ed",
+        "accent": "#cc2b5e",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0b1a2c, stop:0.5 #142e4a, stop:1 #1f456d)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(15, 25, 40, 0.9), stop:1 rgba(25, 45, 70, 0.9))",
+        "card_bg": "rgba(33, 147, 176, 0.1)",
+        "border": "rgba(33, 147, 176, 0.4)"
+    },
+    "Volcanic Fire": {
+        "primary": "#ff416c",
+        "secondary": "#ff4b2b",
+        "accent": "#ffc371",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #2c150b, stop:0.5 #4a2414, stop:1 #6d341f)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(50, 25, 15, 0.9), stop:1 rgba(80, 40, 25, 0.9))",
+        "card_bg": "rgba(255, 65, 108, 0.1)",
+        "border": "rgba(255, 65, 108, 0.4)"
+    },
+    "Emerald Forest": {
+        "primary": "#38ef7d",
+        "secondary": "#11998e",
+        "accent": "#ff4b1f",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0b2c15, stop:0.5 #144a24, stop:1 #1f6d34)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(15, 40, 25, 0.9), stop:1 rgba(25, 70, 45, 0.9))",
+        "card_bg": "rgba(56, 239, 125, 0.1)",
+        "border": "rgba(56, 239, 125, 0.4)"
+    },
+    "Royal Purple": {
+        "primary": "#8e2de2",
+        "secondary": "#4a00e0",
+        "accent": "#ff6b6b",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #150b2c, stop:0.5 #24144a, stop:1 #341f6d)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(25, 15, 50, 0.9), stop:1 rgba(45, 25, 85, 0.9))",
+        "card_bg": "rgba(142, 45, 226, 0.1)",
+        "border": "rgba(142, 45, 226, 0.4)"
+    },
+    "Sunset Glow": {
+        "primary": "#ff6a00",
+        "secondary": "#ee0979",
+        "accent": "#2575fc",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #2c1a0b, stop:0.5 #4a2e14, stop:1 #6d451f)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(50, 30, 15, 0.9), stop:1 rgba(80, 50, 25, 0.9))",
+        "card_bg": "rgba(255, 106, 0, 0.1)",
+        "border": "rgba(255, 106, 0, 0.4)"
+    },
+    "Mystic Twilight": {
+        "primary": "#667eea",
+        "secondary": "#764ba2",
+        "accent": "#f093fb",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #1a1a2e, stop:0.5 #16213e, stop:1 #0f3460)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(30, 30, 46, 0.9), stop:1 rgba(25, 25, 35, 0.9))",
+        "card_bg": "rgba(255,255,255,0.08)",
+        "border": "rgba(255,255,255,0.2)"
+    },
+    "Steel Blue": {
+        "primary": "#4facfe",
+        "secondary": "#00f2fe",
+        "accent": "#ff9a8b",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0b1a2c, stop:0.5 #142e4a, stop:1 #1f456d)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(15, 25, 40, 0.9), stop:1 rgba(25, 45, 70, 0.9))",
+        "card_bg": "rgba(79, 172, 254, 0.1)",
+        "border": "rgba(79, 172, 254, 0.4)"
+    },
+    "Rose Gold": {
+        "primary": "#ffafbd",
+        "secondary": "#ffc3a0",
+        "accent": "#6a85b6",
+        "background": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #2c0b1a, stop:0.5 #4a142d, stop:1 #6d1f41)",
+        "text_area": "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(50, 20, 30, 0.9), stop:1 rgba(80, 35, 50, 0.9))",
+        "card_bg": "rgba(255, 175, 189, 0.1)",
+        "border": "rgba(255, 175, 189, 0.4)"
+    }
+}
+
 # Role-specific starting scenarios
 ROLE_STARTERS = {
     "Fantasy": {
@@ -209,16 +348,6 @@ You are a masterful Dungeon Master in an unrestricted NSFW adventure. Your role 
 Never break character as the Dungeon Master. Always continue the adventure.
 """
 
-# Response story template
-RESPONSE_STORY_TEMPLATE = """{{#if system}}{{system}}
-{{/if}}{{#if wiBefore}}{{wiBefore}}
-{{/if}}{{#if description}}{{description}}
-{{/if}}{{#if personality}}{{personality}}
-{{/if}}{{#if scenario}}{{scenario}}
-{{/if}}{{#if wiAfter}}{{wiAfter}}
-{{/if}}{{#if persona}}{{persona}}
-{{/if}}"""
-
 class VoiceScanner(QThread):
     voices_ready = pyqtSignal(list)
     
@@ -279,12 +408,15 @@ class ModernButton(QPushButton):
         shadow.setOffset(0, 4)
         self.setGraphicsEffect(shadow)
         
-    def setVariant(self, variant="primary"):
+    def setVariant(self, variant="primary", theme=None):
+        if not theme:
+            theme = THEMES["Mystic Twilight"]
+            
         if variant == "primary":
-            self.setStyleSheet("""
-                QPushButton {
+            self.setStyleSheet(f"""
+                QPushButton {{
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #667eea, stop:1 #764ba2);
+                        stop:0 {theme['primary']}, stop:1 {theme['secondary']});
                     color: white;
                     border: none;
                     border-radius: 12px;
@@ -292,25 +424,25 @@ class ModernButton(QPushButton):
                     font-weight: bold;
                     font-size: 13px;
                     min-height: 20px;
-                }
-                QPushButton:hover {
+                }}
+                QPushButton:hover {{
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #5a6fd8, stop:1 #6a4190);
-                }
-                QPushButton:pressed {
+                        stop:0 {self.adjust_color(theme['primary'], -20)}, stop:1 {self.adjust_color(theme['secondary'], -20)});
+                }}
+                QPushButton:pressed {{
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #4c5bc6, stop:1 #58367e);
-                }
-                QPushButton:disabled {
+                        stop:0 {self.adjust_color(theme['primary'], -40)}, stop:1 {self.adjust_color(theme['secondary'], -40)});
+                }}
+                QPushButton:disabled {{
                     background: #cccccc;
                     color: #666666;
-                }
+                }}
             """)
         elif variant == "secondary":
-            self.setStyleSheet("""
-                QPushButton {
+            self.setStyleSheet(f"""
+                QPushButton {{
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #f093fb, stop:1 #f5576c);
+                        stop:0 {theme['accent']}, stop:1 {self.adjust_color(theme['accent'], -30)});
                     color: white;
                     border: none;
                     border-radius: 12px;
@@ -318,19 +450,19 @@ class ModernButton(QPushButton):
                     font-weight: bold;
                     font-size: 12px;
                     min-height: 18px;
-                }
-                QPushButton:hover {
+                }}
+                QPushButton:hover {{
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #e685f0, stop:1 #e34b5f);
-                }
-                QPushButton:pressed {
+                        stop:0 {self.adjust_color(theme['accent'], -10)}, stop:1 {self.adjust_color(theme['accent'], -40)});
+                }}
+                QPushButton:pressed {{
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #dc77e5, stop:1 #d13f52);
-                }
+                        stop:0 {self.adjust_color(theme['accent'], -20)}, stop:1 {self.adjust_color(theme['accent'], -50)});
+                }}
             """)
         elif variant == "danger":
-            self.setStyleSheet("""
-                QPushButton {
+            self.setStyleSheet(f"""
+                QPushButton {{
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                         stop:0 #ff6b6b, stop:1 #ee5a52);
                     color: white;
@@ -340,39 +472,50 @@ class ModernButton(QPushButton):
                     font-weight: bold;
                     font-size: 12px;
                     min-height: 18px;
-                }
-                QPushButton:hover {
+                }}
+                QPushButton:hover {{
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                         stop:0 #ff5252, stop:1 #e04a42);
-                }
-                QPushButton:pressed {
+                }}
+                QPushButton:pressed {{
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                         stop:0 #ff3838, stop:1 #d23a32);
-                }
+                }}
             """)
+    
+    def adjust_color(self, color, amount):
+        """Adjust color brightness by amount"""
+        if color.startswith('#'):
+            r = max(0, min(255, int(color[1:3], 16) + amount))
+            g = max(0, min(255, int(color[3:5], 16) + amount))
+            b = max(0, min(255, int(color[5:7], 16) + amount))
+            return f"#{r:02x}{g:02x}{b:02x}"
+        return color
 
 class ModernGroupBox(QGroupBox):
-    def __init__(self, title, parent=None):
+    def __init__(self, title, parent=None, theme=None):
         super().__init__(title, parent)
-        self.setStyleSheet("""
-            QGroupBox {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 rgba(255,255,255,0.1), stop:1 rgba(255,255,255,0.05));
-                border: 1px solid rgba(255,255,255,0.2);
+        if not theme:
+            theme = THEMES["Mystic Twilight"]
+            
+        self.setStyleSheet(f"""
+            QGroupBox {{
+                background: {theme['card_bg']};
+                border: 1px solid {theme['border']};
                 border-radius: 15px;
                 margin-top: 10px;
                 padding-top: 15px;
                 font-weight: bold;
                 color: white;
-            }
-            QGroupBox::title {
+            }}
+            QGroupBox::title {{
                 subcontrol-origin: margin;
                 left: 15px;
                 padding: 0 8px 0 8px;
-                color: #a0a0ff;
+                color: {theme['primary']};
                 font-weight: bold;
                 font-size: 13px;
-            }
+            }}
         """)
         
         shadow = QGraphicsDropShadowEffect()
@@ -382,39 +525,45 @@ class ModernGroupBox(QGroupBox):
         self.setGraphicsEffect(shadow)
 
 class ModernProgressBar(QProgressBar):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, theme=None):
         super().__init__(parent)
-        self.setStyleSheet("""
-            QProgressBar {
-                border: 2px solid rgba(255,255,255,0.3);
+        if not theme:
+            theme = THEMES["Mystic Twilight"]
+            
+        self.setStyleSheet(f"""
+            QProgressBar {{
+                border: 2px solid {theme['border']};
                 border-radius: 10px;
                 text-align: center;
                 color: white;
                 font-weight: bold;
                 background: rgba(0,0,0,0.3);
                 height: 20px;
-            }
-            QProgressBar::chunk {
+            }}
+            QProgressBar::chunk {{
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #667eea, stop:1 #764ba2);
+                    stop:0 {theme['primary']}, stop:1 {theme['secondary']});
                 border-radius: 8px;
-            }
+            }}
         """)
 
 class SyntaxHighlighter(QSyntaxHighlighter):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, theme=None):
         super().__init__(parent)
+        if not theme:
+            theme = THEMES["Mystic Twilight"]
+            
         self.highlighting_rules = []
         
         # Player text format
         player_format = QTextCharFormat()
-        player_format.setForeground(QColor("#4FC3F7"))
+        player_format.setForeground(QColor(theme['primary']))
         player_format.setFontWeight(QFont.Bold)
         self.highlighting_rules.append((QRegExp("You:.*"), player_format))
         
         # DM text format
         dm_format = QTextCharFormat()
-        dm_format.setForeground(QColor("#81C784"))
+        dm_format.setForeground(QColor(theme['accent']))
         self.highlighting_rules.append((QRegExp("Dungeon Master:.*"), dm_format))
         
         # System text format
@@ -443,15 +592,11 @@ class AIWorker(QThread):
     error_occurred = pyqtSignal(str)
     progress_update = pyqtSignal(int)
 
-    def __init__(self, prompt, model, temperature=0.7, scenario="", character_name="", role="", genre="", parent=None):
+    def __init__(self, prompt, model, temperature=0.7, parent=None):
         super().__init__(parent)
         self.prompt = prompt
         self.model = model
         self.temperature = temperature
-        self.scenario = scenario
-        self.character_name = character_name
-        self.role = role
-        self.genre = genre
         self.is_running = True
 
     def run(self):
@@ -468,14 +613,11 @@ class AIWorker(QThread):
 
     def get_ai_response(self, prompt, model):
         try:
-            # Format the prompt using the response story template
-            formatted_prompt = self.format_prompt_with_template(prompt)
-            
             response = requests.post(
                 CONFIG["OLLAMA_URL"],
                 json={
                     "model": model,
-                    "prompt": formatted_prompt,
+                    "prompt": prompt,
                     "stream": False,
                     "options": {
                         "temperature": self.temperature,
@@ -497,41 +639,6 @@ class AIWorker(QThread):
         except Exception as e:
             self.log_error("Error in get_ai_response", e)
             return ""
-
-    def format_prompt_with_template(self, prompt):
-        """Format the prompt using the response story template"""
-        # Create context dictionary for template variables
-        context = {
-            "system": DM_SYSTEM_PROMPT,
-            "scenario": self.scenario,
-            "persona": f"Character: {self.character_name}\nRole: {self.role}\nGenre: {self.genre}",
-            "description": f"Adventure in {self.genre} setting with {self.character_name} as {self.role}",
-            "personality": f"{self.character_name} is a {self.role} in a {self.genre} world"
-        }
-        
-        # Apply the template
-        formatted = RESPONSE_STORY_TEMPLATE
-        
-        # Replace template variables with actual values
-        for key, value in context.items():
-            placeholder = "{{" + key + "}}"
-            formatted = formatted.replace(placeholder, value if value else "")
-        
-        # Clean up any remaining template conditionals
-        formatted = self.clean_template_conditionals(formatted)
-        
-        # Add the original prompt at the end
-        formatted += f"\n\n{prompt}"
-        
-        return formatted
-
-    def clean_template_conditionals(self, text):
-        """Remove Handlebars-style conditionals from template"""
-        # Remove {{#if ...}} and {{/if}} tags
-        import re
-        text = re.sub(r'{{#if \w+}}', '', text)
-        text = re.sub(r'{{/if}}', '', text)
-        return text
 
     def log_error(self, error_message, exception=None):
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -638,14 +745,39 @@ class TTSWorker(QThread):
         except Exception as e:
             self.error_occurred.emit(f"Unexpected error in speak function: {str(e)}")
 
+class ThemePreviewWidget(QWidget):
+    def __init__(self, theme_name, theme_data, parent=None):
+        super().__init__(parent)
+        self.theme_name = theme_name
+        self.theme_data = theme_data
+        self.setFixedSize(120, 80)
+        
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Draw theme preview
+        gradient = QLinearGradient(0, 0, self.width(), self.height())
+        gradient.setColorAt(0, QColor(self.theme_data['primary']))
+        gradient.setColorAt(1, QColor(self.theme_data['secondary']))
+        
+        painter.setBrush(gradient)
+        painter.setPen(Qt.NoPen)
+        painter.drawRoundedRect(0, 0, self.width(), self.height(), 10, 10)
+        
+        # Draw theme name
+        painter.setPen(QColor('white'))
+        painter.drawText(self.rect(), Qt.AlignCenter, self.theme_name)
+
 class ModernSetupDialog(QDialog):
     def __init__(self, settings, parent=None):
         super().__init__(parent)
         self.settings = settings
+        self.current_theme = self.settings.value("theme", "Mystic Twilight")
         self.setWindowTitle("🎮 Adventure Setup - Choose Your Destiny")
         self.setModal(True)
-        self.setMinimumWidth(800)
-        self.setMinimumHeight(700)
+        self.setMinimumWidth(900)
+        self.setMinimumHeight(800)
         
         # Voice scanner
         self.voice_scanner = VoiceScanner()
@@ -653,6 +785,7 @@ class ModernSetupDialog(QDialog):
         
         self.init_ui()
         self.load_settings()
+        self.apply_theme(THEMES[self.current_theme])
         
         # Start voice scanning
         self.voice_scanner.start()
@@ -662,144 +795,69 @@ class ModernSetupDialog(QDialog):
         layout.setSpacing(20)
         layout.setContentsMargins(30, 30, 30, 30)
         
-        # Apply dark theme
-        self.setStyleSheet("""
-            QDialog {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #1a1a2e, stop:0.5 #16213e, stop:1 #0f3460);
-                color: white;
-                font-family: 'Segoe UI', Arial, sans-serif;
-            }
-            QLabel {
-                color: #e0e0e0;
-                font-size: 12px;
-            }
+        # Header
+        header_label = QLabel("🚀 Adventure Setup")
+        header_label.setObjectName("title")
+        header_label.setStyleSheet("""
             QLabel#title {
                 color: white;
-                font-size: 24px;
+                font-size: 28px;
                 font-weight: bold;
                 qproperty-alignment: AlignCenter;
+                padding: 10px;
             }
+        """)
+        subtitle_label = QLabel("Craft your unique story - choose your world and destiny")
+        subtitle_label.setObjectName("subtitle")
+        subtitle_label.setStyleSheet("""
             QLabel#subtitle {
                 color: #a0a0ff;
                 font-size: 14px;
                 qproperty-alignment: AlignCenter;
-            }
-            QComboBox {
-                background: rgba(255,255,255,0.1);
-                border: 2px solid rgba(255,255,255,0.3);
-                border-radius: 8px;
-                padding: 10px;
-                color: white;
-                font-size: 12px;
-                min-height: 20px;
-            }
-            QComboBox:focus {
-                border: 2px solid #667eea;
-            }
-            QComboBox QAbstractItemView {
-                background: #2d3748;
-                border: 1px solid #4a5568;
-                color: white;
-                selection-background-color: #667eea;
-            }
-            QLineEdit {
-                background: rgba(255,255,255,0.1);
-                border: 2px solid rgba(255,255,255,0.3);
-                border-radius: 8px;
-                padding: 12px;
-                color: white;
-                font-size: 13px;
-                min-height: 25px;
-            }
-            QLineEdit:focus {
-                border: 2px solid #667eea;
-            }
-            QSpinBox {
-                background: rgba(255,255,255,0.1);
-                border: 2px solid rgba(255,255,255,0.3);
-                border-radius: 8px;
-                padding: 8px;
-                color: white;
-                min-height: 20px;
-            }
-            QCheckBox {
-                color: white;
-                spacing: 8px;
-            }
-            QCheckBox::indicator {
-                width: 16px;
-                height: 16px;
-                border: 2px solid rgba(255,255,255,0.5);
-                border-radius: 4px;
-                background: rgba(255,255,255,0.1);
-            }
-            QCheckBox::indicator:checked {
-                background: #667eea;
-                border: 2px solid #667eea;
-            }
-            QSlider::groove:horizontal {
-                border: 1px solid rgba(255,255,255,0.3);
-                height: 6px;
-                background: rgba(255,255,255,0.1);
-                border-radius: 3px;
-            }
-            QSlider::handle:horizontal {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #667eea, stop:1 #764ba2);
-                border: 2px solid rgba(255,255,255,0.8);
-                width: 18px;
-                margin: -7px 0;
-                border-radius: 9px;
-            }
-            QTabWidget::pane {
-                border: 1px solid rgba(255,255,255,0.2);
-                border-radius: 10px;
-                background: rgba(255,255,255,0.05);
-            }
-            QTabBar::tab {
-                background: rgba(255,255,255,0.1);
-                color: #cccccc;
-                padding: 12px 20px;
-                margin: 2px;
-                border-top-left-radius: 8px;
-                border-top-right-radius: 8px;
-            }
-            QTabBar::tab:selected {
-                background: rgba(102, 126, 234, 0.3);
-                color: white;
-                border-bottom: 2px solid #667eea;
-            }
-            QTabBar::tab:hover {
-                background: rgba(255,255,255,0.2);
+                padding-bottom: 10px;
             }
         """)
-        
-        # Header
-        header_label = QLabel("🚀 Adventure Setup")
-        header_label.setObjectName("title")
-        subtitle_label = QLabel("Craft your unique story - choose your world and destiny")
-        subtitle_label.setObjectName("subtitle")
         
         layout.addWidget(header_label)
         layout.addWidget(subtitle_label)
         layout.addSpacing(20)
         
         tab_widget = QTabWidget()
-        tab_widget.setStyleSheet("""
-            QTabWidget::pane {
-                border: 1px solid rgba(255,255,255,0.2);
-                border-radius: 15px;
-                background: rgba(255,255,255,0.05);
-                margin-top: 10px;
-            }
-        """)
         
         # Basic Settings Tab
         basic_tab = QWidget()
         basic_layout = QVBoxLayout(basic_tab)
         basic_layout.setSpacing(25)
         basic_layout.setContentsMargins(25, 25, 25, 25)
+        
+        # Theme selection
+        theme_group = ModernGroupBox("🎨 Visual Theme")
+        theme_layout = QVBoxLayout()
+        
+        theme_select_layout = QHBoxLayout()
+        theme_select_layout.addWidget(QLabel("Select Theme:"))
+        self.theme_combo = QComboBox()
+        self.theme_combo.addItems(THEMES.keys())
+        self.theme_combo.currentTextChanged.connect(self.theme_changed)
+        theme_select_layout.addWidget(self.theme_combo)
+        theme_select_layout.addStretch()
+        
+        # Theme preview area
+        self.theme_preview = QLabel()
+        self.theme_preview.setFixedHeight(100)
+        self.theme_preview.setStyleSheet("""
+            QLabel {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #667eea, stop:1 #764ba2);
+                border-radius: 10px;
+                border: 2px solid rgba(255,255,255,0.3);
+            }
+        """)
+        
+        theme_layout.addLayout(theme_select_layout)
+        theme_layout.addWidget(QLabel("Preview:"))
+        theme_layout.addWidget(self.theme_preview)
+        theme_group.setLayout(theme_layout)
+        basic_layout.addWidget(theme_group)
         
         # Model selection
         model_group = ModernGroupBox("🤖 AI Model Configuration")
@@ -965,6 +1023,7 @@ class ModernSetupDialog(QDialog):
         # Initialize
         self.genre_changed(self.genre_combo.currentText())
         self.load_models()
+        self.theme_changed(self.current_theme)
         
         # Add animations
         self.setup_animations()
@@ -977,6 +1036,144 @@ class ModernSetupDialog(QDialog):
         self.animation.setEndValue(1)
         self.animation.setEasingCurve(QEasingCurve.OutCubic)
         self.animation.start()
+    
+    def theme_changed(self, theme_name):
+        self.current_theme = theme_name
+        theme = THEMES[theme_name]
+        self.apply_theme(theme)
+        
+        # Update theme preview
+        self.theme_preview.setStyleSheet(f"""
+            QLabel {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 {theme['primary']}, stop:1 {theme['secondary']});
+                border-radius: 10px;
+                border: 2px solid {theme['border']};
+                color: white;
+                font-weight: bold;
+                padding: 10px;
+                qproperty-alignment: AlignCenter;
+            }}
+        """)
+        self.theme_preview.setText(f"{theme_name}\nTheme Preview")
+    
+    def apply_theme(self, theme):
+        """Apply the selected theme to the dialog"""
+        self.setStyleSheet(f"""
+            QDialog {{
+                background: {theme['background']};
+                color: white;
+                font-family: 'Segoe UI', Arial, sans-serif;
+            }}
+            QLabel {{
+                color: #e0e0e0;
+                font-size: 12px;
+            }}
+            QLabel#title {{
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+                qproperty-alignment: AlignCenter;
+            }}
+            QLabel#subtitle {{
+                color: {theme['primary']};
+                font-size: 14px;
+                qproperty-alignment: AlignCenter;
+            }}
+            QComboBox {{
+                background: rgba(255,255,255,0.1);
+                border: 2px solid {theme['border']};
+                border-radius: 8px;
+                padding: 10px;
+                color: white;
+                font-size: 12px;
+                min-height: 20px;
+            }}
+            QComboBox:focus {{
+                border: 2px solid {theme['primary']};
+            }}
+            QComboBox QAbstractItemView {{
+                background: #2d3748;
+                border: 1px solid #4a5568;
+                color: white;
+                selection-background-color: {theme['primary']};
+            }}
+            QLineEdit {{
+                background: rgba(255,255,255,0.1);
+                border: 2px solid {theme['border']};
+                border-radius: 8px;
+                padding: 12px;
+                color: white;
+                font-size: 13px;
+                min-height: 25px;
+            }}
+            QLineEdit:focus {{
+                border: 2px solid {theme['primary']};
+            }}
+            QSpinBox {{
+                background: rgba(255,255,255,0.1);
+                border: 2px solid {theme['border']};
+                border-radius: 8px;
+                padding: 8px;
+                color: white;
+                min-height: 20px;
+            }}
+            QCheckBox {{
+                color: white;
+                spacing: 8px;
+            }}
+            QCheckBox::indicator {{
+                width: 16px;
+                height: 16px;
+                border: 2px solid {theme['border']};
+                border-radius: 4px;
+                background: rgba(255,255,255,0.1);
+            }}
+            QCheckBox::indicator:checked {{
+                background: {theme['primary']};
+                border: 2px solid {theme['primary']};
+            }}
+            QSlider::groove:horizontal {{
+                border: 1px solid {theme['border']};
+                height: 6px;
+                background: rgba(255,255,255,0.1);
+                border-radius: 3px;
+            }}
+            QSlider::handle:horizontal {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 {theme['primary']}, stop:1 {theme['secondary']});
+                border: 2px solid rgba(255,255,255,0.8);
+                width: 18px;
+                margin: -7px 0;
+                border-radius: 9px;
+            }}
+            QTabWidget::pane {{
+                border: 1px solid {theme['border']};
+                border-radius: 10px;
+                background: rgba(255,255,255,0.05);
+            }}
+            QTabBar::tab {{
+                background: rgba(255,255,255,0.1);
+                color: #cccccc;
+                padding: 12px 20px;
+                margin: 2px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+            }}
+            QTabBar::tab:selected {{
+                background: rgba(102, 126, 234, 0.3);
+                color: white;
+                border-bottom: 2px solid {theme['primary']};
+            }}
+            QTabBar::tab:hover {{
+                background: rgba(255,255,255,0.2);
+            }}
+        """)
+        
+        # Update buttons with new theme
+        self.ok_button.setVariant("primary", theme)
+        self.cancel_button.setVariant("danger", theme)
+        self.refresh_models_button.setVariant("secondary", theme)
+        self.refresh_voices_button.setVariant("secondary", theme)
     
     def on_voices_ready(self, voices):
         """Update voice combo box with scanned voices"""
@@ -1048,6 +1245,7 @@ class ModernSetupDialog(QDialog):
         self.model_combo.setCurrentText(self.settings.value("model", "llama3:instruct"))
         self.genre_combo.setCurrentText(self.settings.value("genre", "Fantasy"))
         self.tts_enabled.setChecked(self.settings.value("tts_enabled", True, type=bool))
+        self.theme_combo.setCurrentText(self.settings.value("theme", "Mystic Twilight"))
         
         # Fix for voice setting type conversion
         voice_value = self.settings.value("voice", 0)
@@ -1075,13 +1273,15 @@ class ModernSetupDialog(QDialog):
             "tts_enabled": self.tts_enabled.isChecked(),
             "voice": voice_file,
             "temperature": self.temp_slider.value() / 100.0,
-            "max_tokens": self.max_tokens_spin.value()
+            "max_tokens": self.max_tokens_spin.value(),
+            "theme": self.current_theme
         }
 
 class AdventureGameGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.settings = QSettings(CONFIG["CONFIG_FILE"], QSettings.IniFormat)
+        self.current_theme = self.settings.value("theme", "Mystic Twilight")
         self.setWindowTitle("✨ AI Dungeon Master - Interactive Storytelling")
         self.setGeometry(100, 100, 1200, 900)
         
@@ -1097,7 +1297,6 @@ class AdventureGameGUI(QMainWindow):
         self.selected_voice = "FemaleBritishAccent_WhyLucyWhy_Voice_2.wav"
         self.temperature = 0.7
         self.max_tokens = 512
-        self.current_scenario = ""
         
         self.ai_worker = None
         self.tts_worker = None
@@ -1141,9 +1340,14 @@ class AdventureGameGUI(QMainWindow):
             }
         """)
         
+        self.theme_button = ModernButton("🎨 Change Theme")
+        self.theme_button.setVariant("secondary")
+        self.theme_button.clicked.connect(self.change_theme)
+        
         header_layout.addWidget(title_label)
         header_layout.addStretch()
         header_layout.addWidget(subtitle_label)
+        header_layout.addWidget(self.theme_button)
         
         layout.addWidget(header_widget)
         
@@ -1151,21 +1355,20 @@ class AdventureGameGUI(QMainWindow):
         self.text_area = QTextEdit()
         self.text_area.setReadOnly(True)
         self.text_area.setFont(QFont("Segoe UI", 12))
-        self.text_area.setStyleSheet("""
-            QTextEdit {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 rgba(30, 30, 46, 0.9), stop:1 rgba(25, 25, 35, 0.9));
+        self.text_area.setStyleSheet(f"""
+            QTextEdit {{
+                background: {THEMES[self.current_theme]['text_area']};
                 color: #e0e0e0;
-                border: 2px solid rgba(255,255,255,0.1);
+                border: 2px solid {THEMES[self.current_theme]['border']};
                 border-radius: 15px;
                 padding: 20px;
                 font-family: 'Segoe UI', Arial, sans-serif;
                 font-size: 12pt;
                 line-height: 1.5;
                 selection-background-color: rgba(102, 126, 234, 0.3);
-            }
+            }}
         """)
-        self.highlighter = SyntaxHighlighter(self.text_area.document())
+        self.highlighter = SyntaxHighlighter(self.text_area.document(), THEMES[self.current_theme])
         
         # Add shadow to text area
         text_shadow = QGraphicsDropShadowEffect()
@@ -1175,7 +1378,7 @@ class AdventureGameGUI(QMainWindow):
         self.text_area.setGraphicsEffect(text_shadow)
         
         # Progress bar
-        self.progress_bar = ModernProgressBar()
+        self.progress_bar = ModernProgressBar(self, THEMES[self.current_theme])
         self.progress_bar.setVisible(False)
         
         # Status bar
@@ -1200,25 +1403,25 @@ class AdventureGameGUI(QMainWindow):
         self.input_field = QLineEdit()
         self.input_field.setPlaceholderText("💭 Describe your action or type /help for commands...")
         self.input_field.returnPressed.connect(self.send_input)
-        self.input_field.setStyleSheet("""
-            QLineEdit {
+        self.input_field.setStyleSheet(f"""
+            QLineEdit {{
                 background: rgba(255,255,255,0.1);
                 color: white;
-                border: 2px solid rgba(255,255,255,0.3);
+                border: 2px solid {THEMES[self.current_theme]['border']};
                 border-radius: 12px;
                 padding: 15px;
                 font-size: 13px;
                 font-family: 'Segoe UI', Arial, sans-serif;
                 min-height: 25px;
-            }
-            QLineEdit:focus {
-                border: 2px solid #667eea;
+            }}
+            QLineEdit:focus {{
+                border: 2px solid {THEMES[self.current_theme]['primary']};
                 background: rgba(255,255,255,0.15);
-            }
-            QLineEdit:disabled {
+            }}
+            QLineEdit:disabled {{
                 background: rgba(255,255,255,0.05);
                 color: #888888;
-            }
+            }}
         """)
         
         input_shadow = QGraphicsDropShadowEffect()
@@ -1228,7 +1431,7 @@ class AdventureGameGUI(QMainWindow):
         self.input_field.setGraphicsEffect(input_shadow)
         
         self.send_button = ModernButton("🚀 Send")
-        self.send_button.setVariant("primary")
+        self.send_button.setVariant("primary", THEMES[self.current_theme])
         self.send_button.clicked.connect(self.send_input)
         
         input_layout.addWidget(self.input_field)
@@ -1241,27 +1444,27 @@ class AdventureGameGUI(QMainWindow):
         button_layout.setSpacing(10)
         
         self.help_button = ModernButton("❓ Help")
-        self.help_button.setVariant("secondary")
+        self.help_button.setVariant("secondary", THEMES[self.current_theme])
         self.help_button.clicked.connect(self.show_help)
         
         self.redo_button = ModernButton("🔁 Redo")
-        self.redo_button.setVariant("secondary")
+        self.redo_button.setVariant("secondary", THEMES[self.current_theme])
         self.redo_button.clicked.connect(self.redo_last)
         
         self.save_button = ModernButton("💾 Save")
-        self.save_button.setVariant("secondary")
+        self.save_button.setVariant("secondary", THEMES[self.current_theme])
         self.save_button.clicked.connect(self.save_adventure)
         
         self.load_button = ModernButton("📂 Load")
-        self.load_button.setVariant("secondary")
+        self.load_button.setVariant("secondary", THEMES[self.current_theme])
         self.load_button.clicked.connect(self.load_adventure)
         
         self.settings_button = ModernButton("⚙️ Settings")
-        self.settings_button.setVariant("secondary")
+        self.settings_button.setVariant("secondary", THEMES[self.current_theme])
         self.settings_button.clicked.connect(self.show_settings)
         
         self.exit_button = ModernButton("⏹️ Exit")
-        self.exit_button.setVariant("danger")
+        self.exit_button.setVariant("danger", THEMES[self.current_theme])
         self.exit_button.clicked.connect(self.exit_game)
         
         button_layout.addWidget(self.help_button)
@@ -1277,10 +1480,11 @@ class AdventureGameGUI(QMainWindow):
         layout.addWidget(input_widget)
         layout.addWidget(button_widget)
         
-        self.apply_dark_theme()
+        self.apply_theme(THEMES[self.current_theme])
         
-    def apply_dark_theme(self):
-        """Apply comprehensive dark theme to the entire application"""
+    def apply_theme(self, theme):
+        """Apply the selected theme to the entire application"""
+        # Apply palette
         dark_palette = QPalette()
         dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
         dark_palette.setColor(QPalette.WindowText, Qt.white)
@@ -1298,30 +1502,173 @@ class AdventureGameGUI(QMainWindow):
         
         self.setPalette(dark_palette)
         
-        # Additional dark theme styling
-        self.setStyleSheet("""
-            QMainWindow {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #1a1a2e, stop:0.5 #16213e, stop:1 #0f3460);
-            }
-            QMessageBox {
+        # Apply stylesheet
+        self.setStyleSheet(f"""
+            QMainWindow {{
+                background: {theme['background']};
+            }}
+            QMessageBox {{
                 background: #2d2d2d;
                 color: white;
-            }
-            QMessageBox QLabel {
+            }}
+            QMessageBox QLabel {{
                 color: white;
-            }
-            QMessageBox QPushButton {
+            }}
+            QMessageBox QPushButton {{
                 background: #404040;
                 color: white;
                 border: 1px solid #555;
                 padding: 5px 15px;
                 border-radius: 4px;
-            }
-            QMessageBox QPushButton:hover {
+            }}
+            QMessageBox QPushButton:hover {{
                 background: #505050;
+            }}
+        """)
+        
+        # Update specific widgets
+        self.text_area.setStyleSheet(f"""
+            QTextEdit {{
+                background: {theme['text_area']};
+                color: #e0e0e0;
+                border: 2px solid {theme['border']};
+                border-radius: 15px;
+                padding: 20px;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 12pt;
+                line-height: 1.5;
+                selection-background-color: rgba(102, 126, 234, 0.3);
+            }}
+        """)
+        
+        self.input_field.setStyleSheet(f"""
+            QLineEdit {{
+                background: rgba(255,255,255,0.1);
+                color: white;
+                border: 2px solid {theme['border']};
+                border-radius: 12px;
+                padding: 15px;
+                font-size: 13px;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                min-height: 25px;
+            }}
+            QLineEdit:focus {{
+                border: 2px solid {theme['primary']};
+                background: rgba(255,255,255,0.15);
+            }}
+            QLineEdit:disabled {{
+                background: rgba(255,255,255,0.05);
+                color: #888888;
+            }}
+        """)
+        
+        # Update buttons
+        self.send_button.setVariant("primary", theme)
+        self.help_button.setVariant("secondary", theme)
+        self.redo_button.setVariant("secondary", theme)
+        self.save_button.setVariant("secondary", theme)
+        self.load_button.setVariant("secondary", theme)
+        self.settings_button.setVariant("secondary", theme)
+        self.exit_button.setVariant("danger", theme)
+        self.theme_button.setVariant("secondary", theme)
+        
+        # Update progress bar
+        self.progress_bar.setStyleSheet(f"""
+            QProgressBar {{
+                border: 2px solid {theme['border']};
+                border-radius: 10px;
+                text-align: center;
+                color: white;
+                font-weight: bold;
+                background: rgba(0,0,0,0.3);
+                height: 20px;
+            }}
+            QProgressBar::chunk {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 {theme['primary']}, stop:1 {theme['secondary']});
+                border-radius: 8px;
+            }}
+        """)
+        
+        # Update highlighter
+        self.highlighter = SyntaxHighlighter(self.text_area.document(), theme)
+    
+    def change_theme(self):
+        """Show theme selection dialog"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("🎨 Select Theme")
+        dialog.setModal(True)
+        dialog.setFixedSize(600, 500)
+        
+        layout = QVBoxLayout(dialog)
+        
+        # Theme grid
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                background: transparent;
             }
         """)
+        
+        container = QWidget()
+        grid_layout = QVBoxLayout(container)
+        
+        for theme_name, theme_data in THEMES.items():
+            theme_widget = QWidget()
+            theme_widget_layout = QHBoxLayout(theme_widget)
+            theme_widget_layout.setContentsMargins(10, 5, 10, 5)
+            
+            preview = ThemePreviewWidget(theme_name, theme_data)
+            
+            name_label = QLabel(theme_name)
+            name_label.setStyleSheet("""
+                QLabel {
+                    color: white;
+                    font-size: 14px;
+                    font-weight: bold;
+                }
+            """)
+            
+            if theme_name == self.current_theme:
+                current_indicator = QLabel("✅ Current")
+                current_indicator.setStyleSheet("color: #4FC3F7; font-weight: bold;")
+            else:
+                current_indicator = QLabel("")
+            
+            theme_widget_layout.addWidget(preview)
+            theme_widget_layout.addWidget(name_label)
+            theme_widget_layout.addStretch()
+            theme_widget_layout.addWidget(current_indicator)
+            
+            # Make the theme widget clickable
+            theme_widget.setCursor(Qt.PointingHandCursor)
+            theme_widget.mousePressEvent = lambda e, t=theme_name: self.select_theme(t, dialog)
+            
+            grid_layout.addWidget(theme_widget)
+        
+        scroll.setWidget(container)
+        layout.addWidget(scroll)
+        
+        # Close button
+        close_btn = ModernButton("Close")
+        close_btn.setVariant("primary", THEMES[self.current_theme])
+        close_btn.clicked.connect(dialog.close)
+        layout.addWidget(close_btn)
+        
+        dialog.exec_()
+    
+    def select_theme(self, theme_name, dialog):
+        """Select and apply a new theme"""
+        self.current_theme = theme_name
+        self.settings.setValue("theme", theme_name)
+        self.apply_theme(THEMES[theme_name])
+        dialog.close()
+        
+        # Update the conversation with theme change notification
+        if self.adventure_started:
+            self.append_text(f"🎨 <font color='{THEMES[theme_name]['primary']}'>Theme changed to: {theme_name}</font><br>")
     
     def show_setup_dialog(self):
         dialog = ModernSetupDialog(self.settings, self)
@@ -1349,12 +1696,18 @@ class AdventureGameGUI(QMainWindow):
         self.temperature = selections["temperature"]
         self.max_tokens = selections["max_tokens"]
         
+        # Apply theme if changed
+        if selections["theme"] != self.current_theme:
+            self.current_theme = selections["theme"]
+            self.apply_theme(THEMES[self.current_theme])
+        
         # Save settings
         self.settings.setValue("model", self.ollama_model)
         self.settings.setValue("genre", self.selected_genre)
         self.settings.setValue("role", self.selected_role)
         self.settings.setValue("character_name", self.character_name)
         self.settings.setValue("tts_enabled", self.tts_enabled)
+        self.settings.setValue("theme", self.current_theme)
         
         # Save voice as string filename
         self.settings.setValue("voice", self.selected_voice)
@@ -1378,7 +1731,6 @@ class AdventureGameGUI(QMainWindow):
         
         # Start new adventure
         starter = ROLE_STARTERS[self.selected_genre][self.selected_role]
-        self.current_scenario = starter
         self.append_text(f"<font color='#FFA500'><b>🌟 Adventure Start: {self.character_name} the {self.selected_role} 🌟</b></font><br><br>")
         self.append_text(f"<b>🎬 Starting scenario:</b> {starter}<br><br>")
         self.append_text("<font color='#4FC3F7'>💡 Type <b>/help</b> for available commands</font><br><br>")
@@ -1413,10 +1765,11 @@ class AdventureGameGUI(QMainWindow):
         
         # Process player action
         self.last_player_input = user_input
-        self.append_text(f"<font color='#4FC3F7'><b>🎭 You:</b> {user_input}</font><br>")
+        self.append_text(f"<font color='{THEMES[self.current_theme]['primary']}'><b>🎭 You:</b> {user_input}</font><br>")
         
         formatted_input = f"Player: {user_input}"
         prompt = (
+            f"{DM_SYSTEM_PROMPT}\n\n"
             f"{self.conversation}\n"
             f"{formatted_input}\n"
             "Dungeon Master:"
@@ -1459,6 +1812,8 @@ class AdventureGameGUI(QMainWindow):
             self.show_status()
         elif cmd == '/export':
             self.export_conversation()
+        elif cmd == '/theme':
+            self.change_theme()
         else:
             self.append_text(f"❌ <font color='#FF6B6B'>Unknown command: {command}</font><br>")
     
@@ -1468,6 +1823,7 @@ class AdventureGameGUI(QMainWindow):
 <h3>🎮 Current Adventure Status</h3>
 <p><b>Character:</b> {self.character_name} the {self.selected_role}<br>
 <b>Genre:</b> {self.selected_genre}<br>
+<b>Theme:</b> {self.current_theme}<br>
 <b>AI Model:</b> {self.ollama_model}<br>
 <b>TTS:</b> {'Enabled' if self.tts_enabled else 'Disabled'}<br>
 <b>Voice:</b> {self.selected_voice}<br>
@@ -1503,15 +1859,7 @@ class AdventureGameGUI(QMainWindow):
         self.progress_bar.setValue(0)
         self.set_ui_enabled(False)
         
-        self.ai_worker = AIWorker(
-            prompt, 
-            self.ollama_model, 
-            self.temperature,
-            self.current_scenario,
-            self.character_name,
-            self.selected_role,
-            self.selected_genre
-        )
+        self.ai_worker = AIWorker(prompt, self.ollama_model, self.temperature)
         self.ai_worker.response_ready.connect(self.handle_ai_response)
         self.ai_worker.error_occurred.connect(self.handle_ai_error)
         self.ai_worker.progress_update.connect(self.progress_bar.setValue)
@@ -1522,13 +1870,10 @@ class AdventureGameGUI(QMainWindow):
         self.set_ui_enabled(True)
         self.status_label.setText("🟢 Ready for your next action")
         
-        self.append_text(f"<font color='#81C784'><b>🎮 Dungeon Master:</b> {response}</font><br><br>")
+        self.append_text(f"<font color='{THEMES[self.current_theme]['accent']}'><b>🎮 Dungeon Master:</b> {response}</font><br><br>")
         self.conversation += f"\nDungeon Master: {response}"
         self.last_ai_reply = response
         self.speak_text(response)
-        
-        # Update current scenario with the latest response
-        self.current_scenario = response
         
         # Auto-save after each response
         self.auto_save()
@@ -1578,6 +1923,7 @@ class AdventureGameGUI(QMainWindow):
         self.load_button.setEnabled(enabled)
         self.settings_button.setEnabled(enabled)
         self.exit_button.setEnabled(enabled)
+        self.theme_button.setEnabled(enabled)
     
     def show_help(self):
         help_text = """
@@ -1588,6 +1934,7 @@ class AdventureGameGUI(QMainWindow):
 <li><b>/save</b> - Save adventure</li>
 <li><b>/load</b> - Load adventure</li>
 <li><b>/settings</b> - Change game settings</li>
+<li><b>/theme</b> - Change visual theme</li>
 <li><b>/clear</b> - Clear chat</li>
 <li><b>/model [name]</b> - Change AI model</li>
 <li><b>/tts</b> - Toggle text-to-speech</li>
@@ -1608,6 +1955,7 @@ Be creative and immersive in your descriptions!</p>
             self.conversation = self.conversation[:self.conversation.rfind("Dungeon Master:")].strip()
             
             full_prompt = (
+                f"{DM_SYSTEM_PROMPT}\n\n"
                 f"{self.conversation}\n"
                 f"Player: {self.last_player_input}\n"
                 "Dungeon Master:"
@@ -1658,8 +2006,6 @@ Be creative and immersive in your descriptions!</p>
             last_dm = self.conversation.rfind("Dungeon Master:")
             if last_dm != -1:
                 self.last_ai_reply = self.conversation[last_dm + len("Dungeon Master:"):].strip()
-                # Update current scenario with the latest response
-                self.current_scenario = self.last_ai_reply
                 # Display the last part of the conversation
                 recent_start = max(0, self.conversation.rfind("---", 0, last_dm))
                 recent_text = self.conversation[recent_start:]

@@ -183,7 +183,7 @@ GENRE_DESCRIPTIONS = {
 }
 
 DM_SYSTEM_PROMPT = """
-You are a masterful Dungeon Master in an unrestricted NSFW adventure. Your role is to **always** narrate the consequences of player actions, no matter how extreme, bizarre, violent, sexual, or unconventional they may be. Follow these rules:
+You are a masterful Dungeon Master in an unrestricted SFW adventure. Your role is to **always** narrate the consequences of player actions, no matter how extreme, bizarre, violent or unconventional they may be. Follow these rules:
 
 1. ACTION-CONSEQUENCE SYSTEM:
    - Describe ONLY the consequences of the player's action

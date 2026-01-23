@@ -17,6 +17,7 @@ CONFIG = {
     "ALLTALK_API_URL": "http://localhost:7851/api/tts-generate",
     "OLLAMA_URL": "http://localhost:11434/api/generate",
     "LOG_FILE": "error_log.txt",
+    "TTS_ERROR_FILE": "tts_errors.txt",
     "SAVE_FILE": "adventure.txt",
     "DEFAULT_MODEL": "llama3:instruct",
     "REQUEST_TIMEOUT": 120,
@@ -134,6 +135,27 @@ ROLE_STARTERS = {
         "Civilian": "You're queuing for rationed bread when",
         "Resistance Fighter": "You're transmitting coded messages in an attic when"
     },
+    "WW2": {
+        "Soldier (American)": "You're storming the beaches of Normandy under heavy German fire when",
+        "Soldier (British)": "You're preparing for the D-Day invasion aboard a troop ship when",
+        "Soldier (Russian)": "You're defending Stalingrad house by house against the German advance when",
+        "Soldier (German)": "You're manning a machine gun nest on the Atlantic Wall when",
+        "Soldier (Italian)": "You're retreating through the Italian countryside after the Allied invasion when",
+        "Soldier (French)": "You're joining the French Resistance after the fall of Paris when",
+        "Soldier (Japanese)": "You're defending a Pacific island against American marines when",
+        "Soldier (Canadian)": "You're fighting through the rubble of a French town during the liberation when",
+        "Soldier (Australian)": "You're battling Japanese forces in the jungles of New Guinea when",
+        "Resistance Fighter": "You're sabotaging German supply lines under cover of darkness when",
+        "Spy": "You're transmitting coded messages from occupied territory when",
+        "Pilot (RAF)": "You're scrambling to intercept German bombers during the Battle of Britain when",
+        "Pilot (Luftwaffe)": "You're flying a bombing mission over England when",
+        "Tank Commander": "You're leading a Sherman tank through the Ardennes forest when",
+        "Sniper": "You're concealed in a ruined building, watching for enemy movement when",
+        "Medic": "You're treating wounded soldiers under fire on the front lines when",
+        "Naval Officer": "You're commanding a destroyer in the North Atlantic convoy when",
+        "Paratrooper": "You're jumping into enemy territory behind German lines when",
+        "Commando": "You're conducting a covert raid on a German occupied facility when"
+    },
     "1925 New York": {
         "Mafia Boss": "You're counting your illicit earnings in a backroom speakeasy when",
         "Drunk": "You're stumbling out of a jazz club at dawn when",
@@ -177,6 +199,7 @@ GENRE_DESCRIPTIONS = {
     "Post-Apocalyptic": "You are in a world after a catastrophic event, where civilization has collapsed and survivors scavenge among the ruins of the old world.",
     "1880": "You are in the late 19th century during the Industrial Revolution, a time of steam power, early electricity, and social upheaval.",
     "WW1": "You are in the trenches and battlefields of World War I, a brutal conflict that introduced modern warfare to the world.",
+    "WW2": "You are in the global conflict of World War II, fighting across Europe, the Pacific, and beyond with modern weaponry and tactics.",
     "1925 New York": "You are in the Roaring Twenties in New York City, a time of jazz, prohibition, organized crime, and economic prosperity.",
     "Roman Empire": "You are in ancient Rome at the height of its power, with gladiators, legions, and political intrigue in the eternal city.",
     "French Revolution": "You are in France during the revolution, a time of upheaval where the monarchy was overthrown and the reign of terror began."
@@ -243,6 +266,26 @@ class AdventureGame:
                 
         except Exception as e:
             print(f"CRITICAL: Failed to write to error log: {e}")
+
+    def log_tts_error(self, error_message: str, exception: Optional[Exception] = None) -> None:
+        """Log TTS-specific errors to a separate file"""
+        try:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_path = CONFIG["TTS_ERROR_FILE"]
+            
+            with open(log_path, "a", encoding="utf-8") as log_file:
+                log_file.write(f"\n--- TTS ERROR [{timestamp}] ---\n")
+                log_file.write(f"Message: {error_message}\n")
+                log_file.write(f"Text attempted: {self.state.last_ai_reply[:200] if self.state.last_ai_reply else 'No text'}\n")
+                
+                if exception:
+                    log_file.write(f"Exception: {type(exception).__name__}: {str(exception)}\n")
+                
+                log_file.write(f"TTS Server Status: {'Available' if self.check_alltalk_server() else 'Unavailable'}\n")
+                log_file.write("--- END TTS ERROR ---\n")
+                
+        except Exception as e:
+            print(f"CRITICAL: Failed to write to TTS error log: {e}")
 
     def check_server(self, url: str, service_name: str) -> bool:
         """Generic server health check"""
@@ -360,7 +403,7 @@ class AdventureGame:
             return ""
 
     def speak(self, text: str, voice: str = "FemaleBritishAccent_WhyLucyWhy_Voice_2.wav") -> None:
-        """Non-blocking text-to-speech with improved error handling"""
+        """Non-blocking text-to-speech with improved error handling - No visible error messages"""
         if not text.strip():
             return
 
@@ -368,7 +411,8 @@ class AdventureGame:
             with self._audio_lock:
                 try:
                     if not self.check_alltalk_server():
-                        print("[TTS Server unavailable]")
+                        error_msg = "TTS Server unavailable: AllTalk TTS server is not responding"
+                        self.log_tts_error(error_msg)
                         return
 
                     payload = {
@@ -393,12 +437,21 @@ class AdventureGame:
                         sd.wait()
                     elif content_type.startswith("application/json"):
                         error_data = response.json()
-                        self.log_error(f"AllTalk API error: {error_data.get('error', 'Unknown error')}")
+                        error_msg = f"AllTalk API error: {error_data.get('error', 'Unknown error')}"
+                        self.log_tts_error(error_msg)
                     else:
-                        self.log_error(f"Unexpected AllTalk response type: {content_type}")
+                        error_msg = f"Unexpected AllTalk response type: {content_type}"
+                        self.log_tts_error(error_msg)
 
+                except requests.exceptions.ConnectionError as e:
+                    error_msg = f"Cannot connect to TTS server: {str(e)}"
+                    self.log_tts_error(error_msg, e)
+                except requests.exceptions.Timeout as e:
+                    error_msg = "TTS request timed out after 30 seconds"
+                    self.log_tts_error(error_msg, e)
                 except Exception as e:
-                    self.log_error("Error in TTS", e)
+                    error_msg = f"Unexpected TTS error: {str(e)}"
+                    self.log_tts_error(error_msg, e)
 
         # Start TTS in background thread
         thread = threading.Thread(target=_speak_thread, daemon=True)
@@ -409,7 +462,7 @@ class AdventureGame:
         print("""
 Available commands:
 /? or /help       - Show this help message
-/redo             - Repeat last AI response with a new generation
+/redo             - Delete the last AI response and generate a new one
 /save             - Save the full adventure to adventure.txt
 /load             - Load the adventure from adventure.txt
 /change           - Switch to a different Ollama model
@@ -428,11 +481,43 @@ Available commands:
             print(f"Last action: {self.state.last_player_input[:50]}...")
         print("---------------------------")
 
-    def remove_last_ai_response(self) -> None:
-        """Remove the last AI response from conversation"""
-        pos = self.state.conversation.rfind("Dungeon Master:")
-        if pos != -1:
-            self.state.conversation = self.state.conversation[:pos].strip()
+    def remove_last_exchange(self) -> Tuple[bool, str, str]:
+        """Remove the last player input and AI response from conversation"""
+        try:
+            # Find the last "Dungeon Master:" and the previous "Player:"
+            last_dm_pos = self.state.conversation.rfind("Dungeon Master:")
+            if last_dm_pos == -1:
+                return False, "", ""
+            
+            # Find the player input before this DM response
+            before_last_dm = self.state.conversation[:last_dm_pos]
+            last_player_pos = before_last_dm.rfind("Player:")
+            if last_player_pos == -1:
+                return False, "", ""
+            
+            # Extract the text to remove and what remains
+            removed_part = self.state.conversation[last_player_pos:].strip()
+            remaining_conversation = self.state.conversation[:last_player_pos].strip()
+            
+            # Split removed part into player input and DM response
+            lines = removed_part.split("\n")
+            player_input = ""
+            dm_response = ""
+            
+            for line in lines:
+                if line.startswith("Player:"):
+                    player_input = line[7:].strip()
+                elif line.startswith("Dungeon Master:"):
+                    dm_response = line[15:].strip()
+            
+            # Update the conversation
+            self.state.conversation = remaining_conversation
+            
+            return True, player_input, dm_response
+            
+        except Exception as e:
+            self.log_error("Error removing last exchange", e)
+            return False, "", ""
 
     def save_adventure(self) -> bool:
         """Save adventure to file with error handling"""
@@ -444,6 +529,8 @@ Available commands:
                     "genre": self.state.selected_genre,
                     "role": self.state.selected_role,
                     "model": self.state.current_model,
+                    "last_ai_reply": self.state.last_ai_reply,
+                    "last_player_input": self.state.last_player_input,
                     "save_time": datetime.datetime.now().isoformat()
                 }
             }
@@ -476,11 +563,8 @@ Available commands:
             self.state.selected_genre = metadata.get("genre", "Fantasy")
             self.state.selected_role = metadata.get("role", "Adventurer")
             self.state.current_model = metadata.get("model", CONFIG["DEFAULT_MODEL"])
-            
-            # Extract last AI reply
-            last_dm = self.state.conversation.rfind("Dungeon Master:")
-            if last_dm != -1:
-                self.state.last_ai_reply = self.state.conversation[last_dm + len("Dungeon Master:"):].strip()
+            self.state.last_ai_reply = metadata.get("last_ai_reply", "")
+            self.state.last_player_input = metadata.get("last_player_input", "")
             
             self.state.adventure_started = True
             print("Adventure loaded successfully!")
@@ -496,7 +580,8 @@ Available commands:
         genres = {
             "1": "Fantasy", "2": "Sci-Fi", "3": "Cyberpunk", 
             "4": "Post-Apocalyptic", "5": "1880", "6": "WW1",
-            "7": "1925 New York", "8": "Roman Empire", "9": "French Revolution"
+            "7": "WW2", "8": "1925 New York", "9": "Roman Empire",
+            "10": "French Revolution"
         }
 
         print("Choose your adventure genre:")
@@ -605,25 +690,52 @@ Available commands:
         return True
 
     def _handle_redo(self) -> None:
-        """Handle the /redo command"""
-        if self.state.last_ai_reply and self.state.last_player_input:
-            self.remove_last_ai_response()
-            full_prompt = (
-                f"{DM_SYSTEM_PROMPT}\n\n"
-                f"{self.state.conversation}\n"
-                f"Player: {self.state.last_player_input}\n"
-                "Dungeon Master:"
-            )
-            new_reply = self.get_ai_response(full_prompt)
-            if new_reply:
-                print(f"\nDungeon Master: {new_reply}")
-                self.speak(new_reply)
-                self.state.conversation += f"\nPlayer: {self.state.last_player_input}\nDungeon Master: {new_reply}"
-                self.state.last_ai_reply = new_reply
-            else:
-                print("Failed to generate new response.")
-        else:
+        """Handle the /redo command - Delete last message from view and save file"""
+        if not self.state.last_ai_reply or not self.state.last_player_input:
             print("Nothing to redo.")
+            return
+            
+        print("Removing last exchange and generating new response...")
+        
+        # Remove the last exchange from conversation
+        success, removed_player_input, removed_dm_response = self.remove_last_exchange()
+        
+        if not success:
+            print("Could not remove last exchange.")
+            return
+            
+        # Update the last player input to use for re-generation
+        # We'll use the same player input that was just removed
+        self.state.last_player_input = removed_player_input
+        
+        # Generate new response
+        prompt = (
+            f"{DM_SYSTEM_PROMPT}\n\n"
+            f"{self.state.conversation}\n"
+            f"Player: {self.state.last_player_input}\n"
+            "Dungeon Master:"
+        )
+        
+        new_reply = self.get_ai_response(prompt)
+        if new_reply:
+            # Clear previous line and show new response
+            print(f"\n--- New Response ---")
+            print(f"Dungeon Master: {new_reply}")
+            self.speak(new_reply)
+            
+            # Update conversation with new response
+            self.state.conversation += f"\nPlayer: {self.state.last_player_input}\nDungeon Master: {new_reply}"
+            self.state.last_ai_reply = new_reply
+            
+            # Save immediately to update the save file
+            self.save_adventure()
+            print("--- Save file updated with new response ---")
+        else:
+            print("Failed to generate new response. Restoring previous state...")
+            # Restore the removed exchange if generation fails
+            self.state.conversation += f"\nPlayer: {removed_player_input}\nDungeon Master: {removed_dm_response}"
+            self.state.last_ai_reply = removed_dm_response
+            self.save_adventure()
 
     def _handle_model_change(self) -> None:
         """Handle model change command"""

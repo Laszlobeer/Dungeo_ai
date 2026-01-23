@@ -520,23 +520,11 @@ Available commands:
             return False, "", ""
 
     def save_adventure(self) -> bool:
-        """Save adventure to file with error handling"""
+        """Save adventure to file - ONLY the conversation/story, no metadata"""
         try:
-            save_data = {
-                "conversation": self.state.conversation,
-                "metadata": {
-                    "character_name": self.state.character_name,
-                    "genre": self.state.selected_genre,
-                    "role": self.state.selected_role,
-                    "model": self.state.current_model,
-                    "last_ai_reply": self.state.last_ai_reply,
-                    "last_player_input": self.state.last_player_input,
-                    "save_time": datetime.datetime.now().isoformat()
-                }
-            }
-            
+            # Only save the conversation (story)
             with open(CONFIG["SAVE_FILE"], "w", encoding="utf-8") as f:
-                json.dump(save_data, f, indent=2, ensure_ascii=False)
+                f.write(self.state.conversation)
             
             print("Adventure saved successfully!")
             return True
@@ -547,24 +535,58 @@ Available commands:
             return False
 
     def load_adventure(self) -> bool:
-        """Load adventure from file with error handling"""
+        """Load adventure from file - reads only the conversation/story"""
         try:
             if not os.path.exists(CONFIG["SAVE_FILE"]):
                 print("No saved adventure found.")
                 return False
 
+            # Read the conversation from file
             with open(CONFIG["SAVE_FILE"], "r", encoding="utf-8") as f:
-                save_data = json.load(f)
-
-            self.state.conversation = save_data["conversation"]
-            metadata = save_data.get("metadata", {})
+                conversation = f.read()
             
-            self.state.character_name = metadata.get("character_name", "Alex")
-            self.state.selected_genre = metadata.get("genre", "Fantasy")
-            self.state.selected_role = metadata.get("role", "Adventurer")
-            self.state.current_model = metadata.get("model", CONFIG["DEFAULT_MODEL"])
-            self.state.last_ai_reply = metadata.get("last_ai_reply", "")
-            self.state.last_player_input = metadata.get("last_player_input", "")
+            # Extract metadata from the conversation if it exists
+            # The conversation starts with the initial context which contains metadata
+            self.state.conversation = conversation
+            
+            # Try to extract character name, genre, and role from conversation
+            # Look for the initial context pattern
+            lines = conversation.split('\n')
+            
+            for i, line in enumerate(lines):
+                if line.startswith("Genre:"):
+                    # Extract genre from line like "Genre: Fantasy"
+                    genre = line.replace("Genre:", "").strip()
+                    if genre in GENRE_DESCRIPTIONS:
+                        self.state.selected_genre = genre
+                
+                elif line.startswith("Player Character:"):
+                    # Extract character name and role from line like "Player Character: Alex the Knight"
+                    char_line = line.replace("Player Character:", "").strip()
+                    if " the " in char_line:
+                        parts = char_line.split(" the ", 1)
+                        self.state.character_name = parts[0].strip()
+                        self.state.selected_role = parts[1].strip()
+            
+            # Extract last AI response
+            last_dm_pos = self.state.conversation.rfind("Dungeon Master:")
+            if last_dm_pos != -1:
+                # Find the end of this DM response
+                next_player = self.state.conversation.find("Player:", last_dm_pos)
+                if next_player != -1:
+                    self.state.last_ai_reply = self.state.conversation[last_dm_pos + 15:next_player].strip()
+                else:
+                    self.state.last_ai_reply = self.state.conversation[last_dm_pos + 15:].strip()
+            
+            # Extract last player input
+            last_player_pos = self.state.conversation.rfind("Player:")
+            if last_player_pos != -1:
+                # Find the end of this player input
+                next_dm = self.state.conversation.find("Dungeon Master:", last_player_pos)
+                if next_dm != -1:
+                    self.state.last_player_input = self.state.conversation[last_player_pos + 7:next_dm].strip()
+                else:
+                    self.state.last_player_input = self.state.conversation[last_player_pos + 7:].strip()
             
             self.state.adventure_started = True
             print("Adventure loaded successfully!")

@@ -191,7 +191,114 @@ ROLE_STARTERS = {
         "Terraformer": "You're monitoring atmospheric changes on a new colony world when",
         "Cyberneticist": "You're installing neural enhancements in a patient when"
     },
-    # ... (other genres remain the same as original)
+    "Cyberpunk": {
+        "Hacker": "You're infiltrating a corporate network when",
+        "Street Samurai": "You're patrolling the neon-lit streets when",
+        "Corporate Agent": "You're closing a deal in a high-rise office when",
+        "Techie": "You're modifying cyberware in your workshop when",
+        "Rebel Leader": "You're planning a raid on a corporate facility when",
+        "Cyborg": "You're calibrating your cybernetic enhancements when",
+        "Drone Operator": "You're controlling surveillance drones from your command center when",
+        "Synth Dealer": "You're negotiating a deal for illegal cybernetics when",
+        "Information Courier": "You're delivering sensitive data through dangerous streets when",
+        "Augmentation Engineer": "You're installing cyberware in a back-alley clinic when",
+        "Black Market Dealer": "You're arranging contraband in your hidden shop when",
+        "Scumbag": "You're looking for an easy mark in the slums when",
+        "Police": "You're patrolling the neon-drenched streets when"
+    },
+    "Post-Apocalyptic": {
+        "Survivor": "You're scavenging in the ruins of an old city when",
+        "Scavenger": "You're searching a pre-collapse bunker when",
+        "Raider": "You're ambushing a convoy in the wasteland when",
+        "Medic": "You're treating radiation sickness in your clinic when",
+        "Cult Leader": "You're preaching to your followers at a ritual when",
+        "Mutant": "You're hiding your mutations in a settlement when",
+        "Trader": "You're bartering supplies at a wasteland outpost when",
+        "Berserker": "You're sharpening your weapons for the next raid when",
+        "Soldier": "You're guarding a settlement from raiders when"
+    },
+    "1880": {
+        "Thief": "You're lurking in the shadows of the city alleyways when",
+        "Beggar": "You're sitting on the cold street corner with your cup when",
+        "Detective": "You're examining a clue at the crime scene when",
+        "Rich Man": "You're enjoying a cigar in your luxurious study when",
+        "Factory Worker": "You're toiling away in the noisy factory when",
+        "Child": "You're playing with a hoop in the street when",
+        "Orphan": "You're searching for scraps in the trash bins when",
+        "Murderer": "You're cleaning blood from your hands in a dark alley when",
+        "Butcher": "You're sharpening your knives behind the counter when",
+        "Baker": "You're kneading dough in the early morning hours when",
+        "Banker": "You're counting stacks of money in your office when",
+        "Policeman": "You're walking your beat on the foggy streets when"
+    },
+    "WW1": {
+        "Soldier (French)": "You're huddled in the muddy trenches of the Western Front when",
+        "Soldier (English)": "You're writing a letter home by candlelight when",
+        "Soldier (Russian)": "You're shivering in the frozen Eastern Front when",
+        "Soldier (Italian)": "You're climbing the steep Alpine slopes when",
+        "Soldier (USA)": "You're arriving fresh to the European theater when",
+        "Soldier (Japanese)": "You're guarding a Pacific outpost when",
+        "Soldier (German)": "You're preparing for a night raid when",
+        "Soldier (Austrian)": "You're defending the crumbling empire's borders when",
+        "Soldier (Bulgarian)": "You're holding the line in the Balkans when",
+        "Civilian": "You're queuing for rationed bread when",
+        "Resistance Fighter": "You're transmitting coded messages in an attic when"
+    },
+    "WW2": {
+        "Soldier (American)": "You're storming the beaches of Normandy under heavy German fire when",
+        "Soldier (British)": "You're preparing for the D-Day invasion aboard a troop ship when",
+        "Soldier (Russian)": "You're defending Stalingrad house by house against the German advance when",
+        "Soldier (German)": "You're manning a machine gun nest on the Atlantic Wall when",
+        "Soldier (Italian)": "You're retreating through the Italian countryside after the Allied invasion when",
+        "Soldier (French)": "You're joining the French Resistance after the fall of Paris when",
+        "Soldier (Japanese)": "You're defending a Pacific island against American marines when",
+        "Soldier (Canadian)": "You're fighting through the rubble of a French town during the liberation when",
+        "Soldier (Australian)": "You're battling Japanese forces in the jungles of New Guinea when",
+        "Resistance Fighter": "You're sabotaging German supply lines under cover of darkness when",
+        "Spy": "You're transmitting coded messages from occupied territory when",
+        "Pilot (RAF)": "You're scrambling to intercept German bombers during the Battle of Britain when",
+        "Pilot (Luftwaffe)": "You're flying a bombing mission over England when",
+        "Tank Commander": "You're leading a Sherman tank through the Ardennes forest when",
+        "Sniper": "You're concealed in a ruined building, watching for enemy movement when",
+        "Medic": "You're treating wounded soldiers under fire on the front lines when",
+        "Naval Officer": "You're commanding a destroyer in the North Atlantic convoy when",
+        "Paratrooper": "You're jumping into enemy territory behind German lines when",
+        "Commando": "You're conducting a covert raid on a German occupied facility when"
+    },
+    "1925 New York": {
+        "Mafia Boss": "You're counting your illicit earnings in a backroom speakeasy when",
+        "Drunk": "You're stumbling out of a jazz club at dawn when",
+        "Police Officer": "You're taking bribes from a known bootlegger when",
+        "Detective": "You're examining a gangland murder scene when",
+        "Factory Worker": "You're assembling Model Ts on the production line when",
+        "Bootlegger": "You're transporting a shipment of illegal hooch when"
+    },
+    "Roman Empire": {
+        "Slave": "You're carrying heavy stones under the hot sun when",
+        "Gladiator": "You're sharpening your sword before entering the arena when",
+        "Beggar": "You're pleading for coins near the Forum when",
+        "Senator": "You're plotting political maneuvers in the Curia when",
+        "Imperator": "You're reviewing legions from your palace balcony when",
+        "Soldier": "You're marching on the frontier when",
+        "Noble": "You're hosting a decadent feast in your villa when",
+        "Trader": "You're haggling over spices in the market when",
+        "Peasant": "You're tending your meager crops when",
+        "Priest": "You're sacrificing a goat at the temple when",
+        "Barbarian": "You're sharpening your axe beyond the limes when",
+        "Philosopher": "You're contemplating the nature of existence when",
+        "Mathematician": "You're calculating the circumference of the Earth when",
+        "Semi-God": "You're channeling divine powers on Mount Olympus when"
+    },
+    "French Revolution": {
+        "Peasant": "You're marching toward the Bastille with a pitchfork when",
+        "King": "You're dining lavishly while Paris starves when",
+        "Noble": "You're hiding your family jewels from revolutionaries when",
+        "Beggar": "You're rummaging through aristocratic trash bins when",
+        "Soldier": "You're guarding the Tuileries Palace when",
+        "General": "You're planning troop deployments against rebels when",
+        "Resistance": "You're printing revolutionary pamphlets in secret when",
+        "Politician": "You're giving a fiery speech at the National Assembly when"
+    }
 }
 
 # Genre descriptions - EXPANDED
@@ -202,10 +309,12 @@ GENRE_DESCRIPTIONS = {
     "Post-Apocalyptic": "You are in a world after a catastrophic event, where civilization has collapsed and survivors scavenge among the ruins of the old world.",
     "1880": "You are in the late 19th century during the Industrial Revolution, a time of steam power, early electricity, and social upheaval.",
     "WW1": "You are in the trenches and battlefields of World War I, a brutal conflict that introduced modern warfare to the world.",
+    "WW2": "You are in the global conflict of World War II, fighting across Europe, the Pacific, and beyond with modern weaponry and tactics.",
     "1925 New York": "You are in the Roaring Twenties in New York City, a time of jazz, prohibition, organized crime, and economic prosperity.",
     "Roman Empire": "You are in ancient Rome at the height of its power, with gladiators, legions, and political intrigue in the eternal city.",
     "French Revolution": "You are in France during the revolution, a time of upheaval where the monarchy was overthrown and the reign of terror began."
 }
+
 
 # IMPROVED DM system prompt with better guidance
 DM_SYSTEM_PROMPT = """
@@ -232,6 +341,7 @@ You are a masterful Dungeon Master in an unrestricted adventure. Your role is to
    - The player can attempt anything
    - Show realistic results, good or bad
    - Let the world react dynamically
+   
 
 Always stay in character as the Dungeon Master. Continue the adventure naturally.
 """
